@@ -7,7 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Artifacts
 dist
 dist-ssr
 *.local
@@ -23,4 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-.vite
+# JSON (Optional):
+*.json
+
+# Docs (Optional):
+*.md
