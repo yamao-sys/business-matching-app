@@ -42,10 +42,10 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/naming-convention': [
         'error',
-        {
-          selector: 'variable',
-          format: ['camelCase'],
-        },
+        // {
+        //   selector: 'variable',
+        //   format: ['camelCase'],
+        // },
         {
           selector: 'function',
           format: ['camelCase', 'PascalCase'],
