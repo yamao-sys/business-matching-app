@@ -1,0 +1,40 @@
+openapi: 3.1.0
+x-stoplight:
+  id: 612ou0h114gjn
+info:
+  title: business-matching-app
+  version: '1.0'
+  summary: ''
+  description: Business Matching App APIs
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  /auth/validate_supporter_sign_up:
+    post:
+      summary: Validate SignUp
+      responses:
+        '200':
+          $ref: '#/components/responses/SupporterSignUpResponse'
+        '400':
+          $ref: '#/components/responses/SupporterSignUpResponse'
+      operationId: post-auth-validate_sign_up
+      x-stoplight:
+        id: u7cygk8xkvvgg
+      requestBody:
+        $ref: '#/components/schemas/SupporterSignUpInput'
+      description: validate sign up
+      tags:
+        - auth
+components:
+  schemas: {}
+  requestBodies:
+    SupporterSignUpInput:
+      $ref: './components/supporter_sign_up_input.yaml'
+  responses:
+    SupporterSignUpResponse:
+      $ref: './components/supporter_sign_up_response.yaml'
+tags:
+  - name: auth
+    description: auth endpoint
+  - name: business matching app
+    description: business matching app
