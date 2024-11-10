@@ -1,5 +1,18 @@
 version: '3.9'
 services:
+  api_server:
+    container_name: api_server
+    build:
+      context: ./api_server/app
+    volumes:
+      - ./api_server/app:/app
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    tty: true # コンテナの永続化
+    environment:
+      - TZ=Asia/Tokyo
   frontend:
     build: ./frontend
     volumes:
