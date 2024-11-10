@@ -6,9 +6,9 @@ export type SupporterSignUpInput = {
   lastName: string;
   email: string;
   password: string;
-  birthday: string;
-  frontIdentification: File | ReadStream;
-  backIdentification: File | ReadStream;
+  birthday?: string | undefined;
+  frontIdentification?: (File | ReadStream) | undefined;
+  backIdentification?: (File | ReadStream) | undefined;
   skills?: number[] | undefined;
 };
 

@@ -39,9 +39,6 @@ components:
               - lastName
               - email
               - password
-              - birthday
-              - frontIdentification
-              - backIdentification
             properties:
               firstName:
                 type: string
