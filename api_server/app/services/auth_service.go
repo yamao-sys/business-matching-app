@@ -7,6 +7,7 @@ import (
 	"context"
 	"database/sql"
 	"io"
+	"os"
 	"strconv"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -17,7 +18,7 @@ import (
 
 type AuthService interface {
 	ValidateSignUp(ctx context.Context, request *auth.PostAuthValidateSignUpMultipartRequestBody) error
-	SignUp(ctx context.Context, requestParams auth.PostAuthValidateSignUpMultipartRequestBody) error
+	SignUp(ctx context.Context, requestParams auth.PostAuthSignUpMultipartRequestBody) error
 	// SignIn(ctx context.Context, requestParams dto.SignInRequest) *dto.SignInResponse
 	// GetAuthUser(ctx echo.Context) (*models.User, error)
 	// Getuser(ctx context.Context, id int) *models.User
@@ -35,7 +36,7 @@ func (as *authService) ValidateSignUp(ctx context.Context, request *auth.PostAut
 	return validator.ValidateSignUpSupporter(request)
 }
 
-func (as *authService) SignUp(ctx context.Context, requestParams auth.PostAuthValidateSignUpMultipartRequestBody) error {
+func (as *authService) SignUp(ctx context.Context, requestParams auth.PostAuthSignUpMultipartRequestBody) error {
 	supporter := models.Supporter{}
 	supporter.FirstName = requestParams.FirstName
 	supporter.LastName = requestParams.LastName
@@ -67,7 +68,7 @@ func (as *authService) SignUp(ctx context.Context, requestParams auth.PostAuthVa
 	supporter.Reload(ctx, as.db)
 	supporterID := strconv.Itoa(supporter.ID)
 
-	bucket := client.Bucket("business_matching_app_dev")
+	bucket := client.Bucket(os.Getenv("STORAGE_BUCKET_NAME"))
 
 	if requestParams.FrontIdentification != nil {
 		frontIdentificationPath := "supporters/"+supporterID+"/"+requestParams.FrontIdentification.Filename()
@@ -90,10 +91,6 @@ func (as *authService) SignUp(ctx context.Context, requestParams auth.PostAuthVa
 	_, updateIdenfiticationErr := supporter.Update(ctx, as.db, boil.Infer())
 	return updateIdenfiticationErr
 }
-
-// func (as *authService) ValidateSignUp(ctx context.Context, requestParams auth.SupporterSignUpInput) auth.SupporterSignUpResponse {
-// 	//
-// }
 
 // // func (as *authService) SignIn(ctx context.Context, requestParams dto.SignInRequest) *dto.SignInResponse {
 // // 	// NOTE: emailからユーザの取得
