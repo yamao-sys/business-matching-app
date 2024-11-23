@@ -35,3 +35,12 @@ services:
     volumes:
       - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
       - ./mysql:/var/lib/mysql
+  gcs:
+    image: fsouza/fake-gcs-server
+    tty: true
+    ports:
+      - 4443:4443
+    volumes:
+      - ./.data:/data/business_matching_app_dev
+      - ./.storage:/storage
+    command: -scheme http -public-host ${URL:-localhost}:4443 -external-url http://${URL:-gcs}:4443 -port-http 8000
