@@ -9,10 +9,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var UserFactory = factory.NewFactory(
-	&models.User{
-		Name:  randomdata.FullName(randomdata.RandomGender),
+var SupporterFactory = factory.NewFactory(
+	&models.Supporter{
+		FirstName:  randomdata.FirstName(randomdata.RandomGender),
+		LastName: randomdata.LastName(),
 		Email: randomdata.Email(),
+		FrontIdentification: randomdata.StringSample(),
+		BackIdentification: randomdata.StringSample(),
 	},
 ).Attr("Password", func(args factory.Args) (interface{}, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
