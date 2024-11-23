@@ -1,19 +1,23 @@
 package controllers
 
 import (
-	"app/dto"
+	"app/generated/auth"
 	"app/services"
-	"app/utils"
+	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 type AuthController interface {
-	SignUp(ctx echo.Context) error
-	SignIn(ctx echo.Context) error
+	PostAuthValidateSignUp(ctx context.Context, request auth.PostAuthValidateSignUpRequestObject) (auth.PostAuthValidateSignUpResponseObject, error)
+	PostAuthSignUp(ctx context.Context, request auth.PostAuthSignUpRequestObject) (auth.PostAuthSignUpResponseObject, error)
 }
 
 type authController struct {
@@ -24,61 +28,127 @@ func NewAuthController(authService services.AuthService) AuthController {
 	return &authController{authService}
 }
 
-func (authController *authController) SignUp(ctx echo.Context) error {
-	// NOTE: リクエストデータを構造体に変換
-	requestParams := dto.SignUpRequest{}
-	if err := ctx.Bind(&requestParams); err != nil {
-		log.Println("mapping error")
-		log.Println(err)
-		return ctx.JSON(http.StatusInternalServerError, responseHash(err))
-	}
-	singUpContext := context.Background()
-	result := authController.authService.SignUp(singUpContext, requestParams)
-
-	if result.Error == nil {
-		return ctx.JSON(http.StatusOK, responseHash(""))
+func (authController *authController) PostAuthValidateSignUp(ctx context.Context, request auth.PostAuthValidateSignUpRequestObject) (auth.PostAuthValidateSignUpResponseObject, error) {
+	reader := request.Body
+	// NOTE: バリデーションチェックを行う構造体
+	inputStruct, mappingErr := authController.mappingInputStruct(reader)
+	if mappingErr != nil {
+		return auth.PostAuthValidateSignUp500JSONResponse{InternalServerErrorResponseJSONResponse: auth.InternalServerErrorResponseJSONResponse{Code: http.StatusInternalServerError, Message: mappingErr.Error()}}, nil
 	}
 
-	switch result.ErrorType {
-	case "internalServerError":
-		return ctx.JSON(http.StatusInternalServerError, responseHash(result.Error))
-	case "validationError":
-		return ctx.JSON(http.StatusBadRequest, responseHash(utils.CoordinateValidationErrors(result.Error)))
+	err := authController.authService.ValidateSignUp(ctx, &inputStruct)
+	validationError := authController.mappingValidationErrorStruct(err)
+
+	res := &auth.SupporterSignUpResponse{
+		Code: http.StatusOK,
+		Errors: validationError,
 	}
-	return ctx.JSON(http.StatusInternalServerError, responseHash("unexpected error"))
+	return auth.PostAuthValidateSignUp200JSONResponse{SupporterSignUpResponseJSONResponse: auth.SupporterSignUpResponseJSONResponse{Code: res.Code, Errors: res.Errors}}, nil
 }
 
-func (authController *authController) SignIn(ctx echo.Context) error {
-	requestParams := dto.SignInRequest{}
-	if err := ctx.Bind(&requestParams); err != nil {
-		return ctx.JSON(http.StatusInternalServerError, responseHash(err))
-	}
-	singInContext := context.Background()
-	result := authController.authService.SignIn(singInContext, requestParams)
-
-	if result.NotFoundMessage != "" {
-		return ctx.JSON(http.StatusNotFound, responseHash(result.NotFoundMessage))
-	}
-	if result.Error != nil {
-		return ctx.JSON(http.StatusInternalServerError, responseHash(result.Error))
+func (authController *authController) PostAuthSignUp(ctx context.Context, request auth.PostAuthSignUpRequestObject) (auth.PostAuthSignUpResponseObject, error) {
+	reader := request.Body
+	// NOTE: バリデーションチェックを行う構造体
+	inputStruct, mappingErr := authController.mappingInputStruct(reader)
+	if mappingErr != nil {
+		return auth.PostAuthSignUp500JSONResponse{InternalServerErrorResponseJSONResponse: auth.InternalServerErrorResponseJSONResponse{Code: http.StatusInternalServerError, Message: mappingErr.Error()}}, nil
 	}
 
-	// NOTE: Cookieにtokenをセット
-	cookie := &http.Cookie{
-		Name:     "token",
-		Value:    result.TokenString,
-		MaxAge:   3600 * 24,
-		Path:     "/",
-		Domain:   "localhost",
-		Secure:   false,
-		HttpOnly: true,
+	err := authController.authService.ValidateSignUp(ctx, &inputStruct)
+	if err != nil {
+		validationError := authController.mappingValidationErrorStruct(err)
+	
+		res := &auth.SupporterSignUpResponse{
+			Code: http.StatusBadRequest,
+			Errors: validationError,
+		}
+		return auth.PostAuthSignUp400JSONResponse{Code: res.Code, Errors: res.Errors}, nil
 	}
-	ctx.SetCookie(cookie)
-	return ctx.JSON(http.StatusOK, responseHash(""))
+
+	signUpErr := authController.authService.SignUp(ctx, inputStruct)
+	if signUpErr != nil {
+		log.Fatalln(err)
+	}
+
+	res := &auth.SupporterSignUpResponse{
+		Code: http.StatusOK,
+		Errors: auth.SupporterSignUpValidationError{},
+	}
+	return auth.PostAuthSignUp200JSONResponse{SupporterSignUpResponseJSONResponse: auth.SupporterSignUpResponseJSONResponse{Code: res.Code, Errors: res.Errors}}, nil
 }
 
-func responseHash(error interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
-	result["error"] = error
-	return result
+func (authController *authController) mappingInputStruct(reader *multipart.Reader) (auth.PostAuthValidateSignUpMultipartRequestBody, error) {
+	var inputStruct auth.PostAuthValidateSignUpMultipartRequestBody
+
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			// NOTE: 全てのパートを読み終えた場合
+			break
+		}
+		if err != nil {
+			return inputStruct, fmt.Errorf("failed to read multipart part: %w", err)
+		}
+
+		// NOTE: 各パートのヘッダー情報を取得
+		partName := part.FormName()
+		filename := part.FileName()
+
+		var buf bytes.Buffer
+		if _, err := io.Copy(&buf, part); err != nil {
+			return inputStruct, fmt.Errorf("failed to copy content: %w", err)
+		}
+
+		switch partName {
+		case "firstName":
+			inputStruct.FirstName = buf.String()
+		case "lastName":
+			inputStruct.LastName = buf.String()
+		case "password":
+			inputStruct.Password = buf.String()
+		case "email":
+			inputStruct.Email = buf.String()
+		case "birthday":
+			inputStruct.Birthday = buf.String()
+		case "frontIdentification":
+			var frontIdentification openapi_types.File
+			frontIdentification.InitFromBytes(buf.Bytes(), filename)
+			inputStruct.FrontIdentification = &frontIdentification
+		case "backIdentification":
+			var backIdentification openapi_types.File
+			backIdentification.InitFromBytes(buf.Bytes(), filename)
+			inputStruct.BackIdentification = &backIdentification
+		}
+	}
+
+	return inputStruct, nil
+}
+
+func (authController *authController) mappingValidationErrorStruct(err error) auth.SupporterSignUpValidationError {
+	var validationError auth.SupporterSignUpValidationError
+	if err == nil {
+		return validationError
+	}
+
+	if errors, ok := err.(validation.Errors); ok {
+		// NOTE: レスポンス用の構造体にマッピング
+		for field, err := range errors {
+			messages := []string{err.Error()}
+			switch field {
+			case "firstName":
+				validationError.FirstName = &messages
+			case "lastName":
+				validationError.LastName = &messages
+			case "email":
+				validationError.Email = &messages
+			case "password":
+				validationError.Password = &messages
+			case "frontIdentification":
+				validationError.FrontIdentification = &messages
+			case "backIdentification":
+				validationError.BackIdentification = &messages
+			}
+		}
+	}
+	return validationError
 }
