@@ -108,8 +108,6 @@ func (authController *authController) mappingInputStruct(reader *multipart.Reade
 			inputStruct.Password = buf.String()
 		case "email":
 			inputStruct.Email = buf.String()
-		case "birthday":
-			inputStruct.Birthday = buf.String()
 		case "frontIdentification":
 			var frontIdentification openapi_types.File
 			frontIdentification.InitFromBytes(buf.Bytes(), filename)

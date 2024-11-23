@@ -23,7 +23,6 @@ type SupporterSignUpValidationError struct {
 	FrontIdentification *[]string `json:"frontIdentification,omitempty"`
 	LastName            *[]string `json:"lastName,omitempty"`
 	Password            *[]string `json:"password,omitempty"`
-	Skills              *[]string `json:"skills,omitempty"`
 }
 
 // InternalServerErrorResponse defines model for InternalServerErrorResponse.
@@ -41,25 +40,21 @@ type SupporterSignUpResponse struct {
 // PostAuthSignUpMultipartBody defines parameters for PostAuthSignUp.
 type PostAuthSignUpMultipartBody struct {
 	BackIdentification  *openapi_types.File `json:"backIdentification,omitempty"`
-	Birthday            string              `json:"birthday"`
 	Email               string              `json:"email"`
 	FirstName           string              `json:"firstName"`
 	FrontIdentification *openapi_types.File `json:"frontIdentification,omitempty"`
 	LastName            string              `json:"lastName"`
 	Password            string              `json:"password"`
-	Skills              *string             `json:"skills,omitempty"`
 }
 
 // PostAuthValidateSignUpMultipartBody defines parameters for PostAuthValidateSignUp.
 type PostAuthValidateSignUpMultipartBody struct {
 	BackIdentification  *openapi_types.File `json:"backIdentification,omitempty"`
-	Birthday            string              `json:"birthday"`
 	Email               string              `json:"email"`
 	FirstName           string              `json:"firstName"`
 	FrontIdentification *openapi_types.File `json:"frontIdentification,omitempty"`
 	LastName            string              `json:"lastName"`
 	Password            string              `json:"password"`
-	Skills              *string             `json:"skills,omitempty"`
 }
 
 // PostAuthSignUpMultipartRequestBody defines body for PostAuthSignUp for multipart/form-data ContentType.

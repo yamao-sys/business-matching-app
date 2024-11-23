@@ -67,10 +67,6 @@ components:
           type: array
           items:
             type: string
-        skills:
-          type: array
-          items:
-            type: string
   requestBodies:
     SupporterSignUpInput:
       content:
@@ -82,7 +78,6 @@ components:
               - lastName
               - email
               - password
-              - birthday
             properties:
               firstName:
                 type: string
@@ -92,16 +87,12 @@ components:
                 type: string
               password:
                 type: string
-              birthday:
-                type: string
               frontIdentification:
                 type: string
                 format: binary
               backIdentification:
                 type: string
                 format: binary
-              skills:
-                type: string
       description: SignUp Supporter Iuput
   responses:
     SupporterSignUpResponse:

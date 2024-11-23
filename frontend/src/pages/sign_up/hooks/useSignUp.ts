@@ -10,7 +10,6 @@ export const useSignUp = () => {
     lastName: '',
     email: '',
     password: '',
-    birthday: '',
   });
 
   const updateSignUpInput = useCallback((params: Partial<SupporterSignUpInput>) => {
@@ -19,7 +18,7 @@ export const useSignUp = () => {
 
   const clearIdentificationKey = (keyToRemove: 'frontIdentification' | 'backIdentification') => {
     setSupporterSignUpInput((prev) => {
-      const { [keyToRemove]: _, ...rest } = prev;
+      const { [keyToRemove]: _, ...rest } = prev; // eslint-disable-line @typescript-eslint/no-unused-vars
       return rest;
     });
   };
