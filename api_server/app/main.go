@@ -3,34 +3,32 @@ package main
 import (
 	"app/controllers"
 	"app/db"
-	"app/routers"
+	"app/generated/auth"
 	"app/services"
 	"net/http"
 	"os"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
 	dbCon := db.Init()
 
-	// service
+	// NOTE: service層のインスタンス化
 	authService := services.NewAuthService(dbCon)
-	todoService := services.NewTodoService(dbCon)
 
-	// controller
-	authController := controllers.NewAuthController(authService)
-	todoController := controllers.NewTodoController(todoService, authService)
+	// NOTE: controllerをHandlerに追加
+	server := controllers.NewAuthController(authService)
+	strictHandler := auth.NewStrictHandler(server, nil)
 
-	// router
+	// NOTE: Handlerをルーティングに追加
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
-	authRouter := routers.NewAuthRouter(authController)
-	todoRouter := routers.NewTodoRouter(todoController)
-	authRouter.SetRouting(e)
-	todoRouter.SetRouting(e)
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
+	auth.RegisterHandlers(e, strictHandler)
 
 	e.Logger.Fatal(e.Start(":" + os.Getenv("SERVER_PORT")))
 }
