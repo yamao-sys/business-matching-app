@@ -4,35 +4,36 @@ import {
   useSupporterSignUpSetStateContext,
   useSupporterSignUpStateContext,
 } from '../../contexts/SupporterSignUpContext';
-import { SupporterSignUpResponse } from '@/generated/auth/@types';
 import { PhaseType } from '../../types';
 import { SubmitButton } from '@/components/molucules/SubmitButton';
 import { BoxInputForm } from '@/components/molucules/BoxInputForm';
 import { ImageSelector } from '@/components/molucules/ImageSelector';
+import { postValidateSignUp } from '@/api/authApi';
+import { components } from '@/generated/auth/apiSchema';
 
 type Props = {
   togglePhase: (newPhase: PhaseType) => void;
 };
 
+type SupporterSignUpValidationError =
+  components['responses']['SupporterSignUpResponse']['content']['application/json']['errors'];
+
 const INITIAL_VALIDATION_ERRORS = {
-  errors: {
-    firstName: [],
-    lastName: [],
-    email: [],
-    password: [],
-    frontIdentification: [],
-    backIdenfitication: [],
-    skills: [],
-  },
+  firstName: [],
+  lastName: [],
+  email: [],
+  password: [],
+  frontIdentification: [],
+  backIdentification: [],
+  skills: [],
 };
 
 export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
   const { supporterSignUpInput } = useSupporterSignUpStateContext();
-  const { updateSignUpInput } = useSupporterSignUpSetStateContext();
-  console.log(supporterSignUpInput);
+  const { updateSignUpInput, clearIdentificationKey } = useSupporterSignUpSetStateContext();
 
   const [validationErrors, setValidationErrors] =
-    useState<Pick<SupporterSignUpResponse, 'errors'>>(INITIAL_VALIDATION_ERRORS);
+    useState<SupporterSignUpValidationError>(INITIAL_VALIDATION_ERRORS);
 
   const handleMoveToConfirm = useCallback(() => togglePhase('confirmation'), [togglePhase]);
 
@@ -52,32 +53,33 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
 
   const clearSupporterSignUpFileInput = useCallback(
     (key: string) => {
-      updateSignUpInput({ [key]: undefined });
+      if (key === 'frontIdentification' || key === 'backIdentification') {
+        clearIdentificationKey(key);
+      }
     },
-    [updateSignUpInput],
+    [clearIdentificationKey],
   );
 
   const handleValidateSignUp = useCallback(async () => {
     setValidationErrors(INITIAL_VALIDATION_ERRORS);
-    handleMoveToConfirm();
 
-    // try {
-    //   const response = await postValidateSignUp(signUpInput);
+    try {
+      const response = await postValidateSignUp(supporterSignUpInput);
 
-    //   // バリデーションエラーがなければ、確認画面へ遷移
-    //   if (Object.keys(response.errors).length === 0) {
-    //     handleMoveToConfirm();
-    //     return;
-    //   }
+      // バリデーションエラーがなければ、確認画面へ遷移
+      if (Object.keys(response.errors).length === 0) {
+        handleMoveToConfirm();
+        return;
+      }
 
-    //   // NOTE: バリデーションエラーの格納と入力パスワードのリセット
-    //   setValidationErrors(response);
-    //   updateSignUpInput({ password: '', passwordConfirm: '' });
-    // } catch (error) {
-    //   // TODO: エラーハンドリング
-    //   console.log(error);
-    // }
-  }, [setValidationErrors, handleMoveToConfirm]);
+      // NOTE: バリデーションエラーの格納と入力パスワードのリセット
+      setValidationErrors(response.errors);
+      updateSignUpInput({ password: '' });
+    } catch (error) {
+      // TODO: エラーハンドリング
+      console.log(error);
+    }
+  }, [setValidationErrors, handleMoveToConfirm, supporterSignUpInput, updateSignUpInput]);
 
   return (
     <>
@@ -88,7 +90,7 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
           name='lastName'
           value={supporterSignUpInput.lastName}
           onChange={setSupporterSignUpTextInput}
-          validationErrorMessages={validationErrors.errors?.lastName ?? []}
+          validationErrorMessages={validationErrors.lastName ?? []}
           needsMargin={false}
         />
 
@@ -98,7 +100,7 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
           name='firstName'
           value={supporterSignUpInput.firstName}
           onChange={setSupporterSignUpTextInput}
-          validationErrorMessages={validationErrors.errors?.firstName ?? []}
+          validationErrorMessages={validationErrors.firstName ?? []}
           needsMargin={true}
         />
 
@@ -108,7 +110,7 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
           name='email'
           value={supporterSignUpInput.email}
           onChange={setSupporterSignUpTextInput}
-          validationErrorMessages={validationErrors.errors?.email ?? []}
+          validationErrorMessages={validationErrors.email ?? []}
           needsMargin={true}
         />
 
@@ -118,7 +120,7 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
           name='password'
           value={supporterSignUpInput.password}
           onChange={setSupporterSignUpTextInput}
-          validationErrorMessages={validationErrors.errors?.password ?? []}
+          validationErrorMessages={validationErrors.password ?? []}
           needsMargin={true}
         />
 
@@ -126,16 +128,20 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
           labelId='front-identication'
           name='frontIdentification'
           labelText='身分証明書(表)'
+          initialFileInput={supporterSignUpInput.frontIdentification}
           onChange={setSupporterSignUpFileInput}
           onCancel={clearSupporterSignUpFileInput}
+          validationErrorMessages={validationErrors.frontIdentification ?? []}
         />
 
         <ImageSelector
           labelId='back-identication'
           name='backIdentification'
           labelText='身分証明書(裏)'
+          initialFileInput={supporterSignUpInput.backIdentification}
           onChange={setSupporterSignUpFileInput}
           onCancel={clearSupporterSignUpFileInput}
+          validationErrorMessages={validationErrors.backIdentification ?? []}
         />
 
         <SubmitButton labelText='確認画面へ' color='green' onClick={handleValidateSignUp} />

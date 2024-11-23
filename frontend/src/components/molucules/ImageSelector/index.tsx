@@ -8,8 +8,10 @@ type Props = {
   name: string;
   labelText: string;
   needsMargin?: boolean;
+  initialFileInput?: Blob | undefined;
   onChange: (e: React.ChangeEvent<HTMLInputElement>, file: File) => void;
   onCancel: (key: string) => void;
+  validationErrorMessages: string[];
 };
 
 export const ImageSelector: FC<Props> = memo<Props>(function ImageSelector({
@@ -17,11 +19,13 @@ export const ImageSelector: FC<Props> = memo<Props>(function ImageSelector({
   name,
   labelText,
   needsMargin = true,
+  initialFileInput = undefined,
   onChange,
   onCancel,
+  validationErrorMessages = [],
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<Blob | File | null>(initialFileInput ?? null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget?.files && e.currentTarget.files[0]) {
@@ -31,9 +35,8 @@ export const ImageSelector: FC<Props> = memo<Props>(function ImageSelector({
     }
   };
 
-  const handleClickCancelButton = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClickCancelButton = () => {
     setImageFile(null);
-    console.log(fileInputRef.current?.name);
     // <input />タグの値をリセット
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -52,7 +55,7 @@ export const ImageSelector: FC<Props> = memo<Props>(function ImageSelector({
     }
   };
 
-  const onDragLeave = (e: DragEvent<HTMLDivElement>) => {
+  const onDragLeave = () => {
     setIsDragActive(false);
   };
 
@@ -73,7 +76,7 @@ export const ImageSelector: FC<Props> = memo<Props>(function ImageSelector({
     e.preventDefault();
     setIsDragActive(false);
     if (e.dataTransfer.files !== null && e.dataTransfer.files.length > 0) {
-      if (e.dataTransfer.files.length === 1) {
+      if (e.dataTransfer.files.length === 1 && e.dataTransfer.files[0] != undefined) {
         onDropFile(e.dataTransfer.files[0]);
       } else {
         alert('ファイルは１個まで！');
@@ -125,6 +128,14 @@ export const ImageSelector: FC<Props> = memo<Props>(function ImageSelector({
       <button onClick={handleClickCancelButton} name={name}>
         キャンセル
       </button>
+
+      <div className='w-full pt-5 text-left'>
+        {validationErrorMessages.map((message, i) => (
+          <p key={i} className='text-red-400'>
+            {message}
+          </p>
+        ))}
+      </div>
     </BaseFormBox>
   );
 });

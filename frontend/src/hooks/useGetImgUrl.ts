@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 type Args = {
-  file: File | null;
+  file: File | Blob | null;
 };
 
 export const useGetImageUrl = ({ file }: Args) => {
