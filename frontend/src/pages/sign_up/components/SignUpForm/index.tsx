@@ -1,6 +1,8 @@
 import { FC, useState } from 'react';
 import { PhaseType } from '../../types';
 import { SignUpInput } from '../SignUpInput';
+import { SignUpConfirmation } from '../SignUpConfirmation';
+import { SignUpThanks } from '../SignUpThanks';
 
 export const SignUpForm: FC = () => {
   const [phase, setPhase] = useState<PhaseType>('input');
@@ -11,11 +13,9 @@ export const SignUpForm: FC = () => {
       case 'input':
         return <SignUpInput togglePhase={togglePhase} />;
       case 'confirmation':
-        // return <SignUpConfirmation togglePhase={togglePhase} />;
-        return <></>;
+        return <SignUpConfirmation togglePhase={togglePhase} />;
       case 'thanks':
-        // return <SignUpThanks />;
-        return <></>;
+        return <SignUpThanks />;
     }
   };
 
