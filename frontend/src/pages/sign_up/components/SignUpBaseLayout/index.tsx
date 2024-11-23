@@ -10,8 +10,6 @@ export const SignUpBaseLayout: FC<Props> = memo<Props>(function SignUpBaseLayout
   phase,
   children,
 }: Props) {
-  console.log('Sign Up Base Layout rendered');
-
   return (
     <>
       <BaseLayout>
