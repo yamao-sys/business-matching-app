@@ -1,6 +1,5 @@
 import { createContext, FC, useContext } from 'react';
-import { useSignUp } from '../hooks/useSignUp';
-import { SupporterSignUpInput } from '@/generated/auth/@types';
+import { SupporterSignUpInput, useSignUp } from '../hooks/useSignUp';
 
 type Props = {
   children: React.ReactNode;
@@ -9,6 +8,7 @@ type Props = {
 // Type
 type SupporterSignUpSetStateContextType = {
   updateSignUpInput: (params: Partial<SupporterSignUpInput>) => void;
+  clearIdentificationKey: (keyToRemove: 'frontIdentification' | 'backIdentification') => void;
 };
 
 type SupporterSignUpStateContextType = {
@@ -23,11 +23,13 @@ export const useSupporterSignUpStateContext = () => useContext(SupporterSignUpSt
 export const useSupporterSignUpSetStateContext = () => useContext(SupporterSignUpSetStateContext); // eslint-disable-line react-refresh/only-export-components
 
 export const SupporterSignUpContextProvider: FC<Props> = ({ children }) => {
-  const { supporterSignUpInput, updateSignUpInput } = useSignUp();
+  const { supporterSignUpInput, updateSignUpInput, clearIdentificationKey } = useSignUp();
 
   return (
     <SupporterSignUpStateContext.Provider value={{ supporterSignUpInput }}>
-      <SupporterSignUpSetStateContext.Provider value={{ updateSignUpInput }}>
+      <SupporterSignUpSetStateContext.Provider
+        value={{ updateSignUpInput, clearIdentificationKey }}
+      >
         {children}
       </SupporterSignUpSetStateContext.Provider>
     </SupporterSignUpStateContext.Provider>
