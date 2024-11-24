@@ -1,5 +1,9 @@
 root = true
 
-[*]
+[swagger/*.yaml]
+indent_style = unset
+indent_size = unset
+
+[*.go]
 indent_style = tab
 indent_size = 4

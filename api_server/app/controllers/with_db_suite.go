@@ -2,15 +2,10 @@ package controllers
 
 import (
 	"app/db"
-	"app/services"
-	"bytes"
 	"context"
 	"database/sql"
-	"net/http"
-	"net/http/httptest"
 
 	"github.com/DATA-DOG/go-txdb"
-	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -21,7 +16,7 @@ type WithDBSuite struct {
 var (
 	DBCon *sql.DB
 	ctx   context.Context
-	token string
+	// token string
 )
 
 // func (s *WithDBSuite) SetupSuite()                           {} // テストスイート実施前の処理
@@ -48,24 +43,24 @@ func (s *WithDBSuite) CloseDB() {
 	DBCon.Close()
 }
 
-func (s *WithDBSuite) SignIn() {
-	authService := services.NewAuthService(DBCon)
-	authController := NewAuthController(authService)
+// func (s *WithDBSuite) SignIn() {
+// 	authService := services.NewAuthService(DBCon)
+// 	authController := NewAuthController(authService)
 
-	// recorderの初期化
-	authRecorder := httptest.NewRecorder()
+// 	// recorderの初期化
+// 	authRecorder := httptest.NewRecorder()
 
-	// NOTE: リクエストの生成
-	signUpRequestBody := bytes.NewBufferString("{\"name\":\"test name 1\",\"email\":\"test@example.com\",\"password\":\"password\"}")
-	req := httptest.NewRequest(http.MethodPost, "/auth/sign_up", signUpRequestBody)
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+// 	// NOTE: リクエストの生成
+// 	signUpRequestBody := bytes.NewBufferString("{\"name\":\"test name 1\",\"email\":\"test@example.com\",\"password\":\"password\"}")
+// 	req := httptest.NewRequest(http.MethodPost, "/auth/sign_up", signUpRequestBody)
+// 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-	// echoによるWebサーバの設定
-	echoServer := echo.New()
-	c := echoServer.NewContext(req, authRecorder)
-	c.SetPath("auth/sign_up")
+// 	// echoによるWebサーバの設定
+// 	echoServer := echo.New()
+// 	c := echoServer.NewContext(req, authRecorder)
+// 	c.SetPath("auth/sign_up")
 
-	// NOTE: ログインし、tokenに認証情報を格納
-	authController.SignIn(c)
-	token = authRecorder.Result().Cookies()[0].Value
-}
+// 	// NOTE: ログインし、tokenに認証情報を格納
+// 	authController.SignIn(c)
+// 	token = authRecorder.Result().Cookies()[0].Value
+// }

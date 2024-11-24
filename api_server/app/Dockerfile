@@ -11,6 +11,7 @@ RUN go mod tidy && \
 	go install github.com/rubenv/sql-migrate/...@latest && \
 	go install github.com/volatiletech/sqlboiler/v4@latest && \
 	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest && \
-	go install github.com/joho/godotenv/cmd/godotenv@latest
+	go install github.com/joho/godotenv/cmd/godotenv@latest && \
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
 
 RUN apk add --update make

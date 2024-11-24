@@ -73,6 +73,23 @@ jobs:
           sudo mkdir /app
           sudo cp api_server/app/.env.test /app/.env.test
 
+      - name: Prepare storage directory
+        working-directory: ./api_server/app
+        run: mkdir data/ && mkdir data/business_matching_app_test
+
+      - name: Set up google cloud server
+        uses: fsouza/fake-gcs-action@v0.4.1
+        with:
+          version: '1.37.2'
+          backend: memory
+          data: './api_server/app/data'
+          public-host: 'gcs:4443'
+          external-url: 'http://gcs:4443'
+          scheme: http
+
+      - name: Add GCS to /etc/hosts
+        run: echo "127.0.0.1 gcs" | sudo tee -a /etc/hosts
+
       - name: Setup test database
         working-directory: ./api_server/app/db
         run: godotenv -f /app/.env.test sql-migrate up -env="mysql"
