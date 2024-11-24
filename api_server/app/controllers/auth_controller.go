@@ -65,7 +65,7 @@ func (authController *authController) PostAuthSignUp(ctx context.Context, reques
 		return auth.PostAuthSignUp400JSONResponse{Code: res.Code, Errors: res.Errors}, nil
 	}
 
-	signUpErr := authController.authService.SignUp(ctx, inputStruct)
+	signUpErr := authController.authService.SignUp(ctx, auth.PostAuthSignUpMultipartRequestBody(inputStruct))
 	if signUpErr != nil {
 		log.Fatalln(err)
 	}
@@ -96,6 +96,7 @@ func (authController *authController) mappingInputStruct(reader *multipart.Reade
 
 		var buf bytes.Buffer
 		if _, err := io.Copy(&buf, part); err != nil {
+			fmt.Println(err)
 			return inputStruct, fmt.Errorf("failed to copy content: %w", err)
 		}
 
