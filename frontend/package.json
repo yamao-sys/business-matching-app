@@ -9,8 +9,8 @@
     "tsc": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "npx prettier .",
-    "format:fix": "npx prettier . --write",
+    "format": "prettier --check  --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json}'",
+    "format:fix": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json}'",
     "preview": "vite preview",
     "check:ts": "tsc --noEmit"
   },

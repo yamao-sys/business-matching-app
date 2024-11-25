@@ -41,9 +41,9 @@ jobs:
         run: cd ./frontend && npm run tsc | reviewdog -reporter=github-pr-review -f=tsc -level=warn -filter-mode=nofilter -fail-level=any
         shell: bash
 
-      # - name: Run prettier
-      #   run: cd ./frontend && npm run format
-      #   shell: bash
+      - name: Run prettier
+        run: cd ./frontend && npm run format
+        shell: bash
 
       - name: Run eslint with reviewdog
         env:
