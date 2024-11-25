@@ -35,7 +35,7 @@ vi.mock('@/apis/authApi', async (importOriginal) => {
 
 const togglePhase = vi.fn();
 
-describe('pages/auth/sign_up/components/organisms/SignUpConfirmation', () => {
+describe('pages/auth/sign_up/components/SignUpConfirmation', () => {
   afterEach(() => {
     togglePhase.mockClear();
   });
