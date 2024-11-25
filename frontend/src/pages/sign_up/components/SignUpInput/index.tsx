@@ -8,7 +8,7 @@ import { PhaseType } from '../../types';
 import { SubmitButton } from '@/components/molucules/SubmitButton';
 import { BoxInputForm } from '@/components/molucules/BoxInputForm';
 import { ImageSelector } from '@/components/molucules/ImageSelector';
-import { postValidateSignUp } from '@/api/authApi';
+import { postValidateSignUp } from '@/apis/authApi';
 import { components } from '@/generated/auth/apiSchema';
 
 type Props = {
