@@ -42,7 +42,7 @@ jobs:
         shell: bash
 
       - name: Run prettier
-        run: cd ./frontend && npm run lint:prettier
+        run: cd ./frontend && npm run format
         shell: bash
 
       - name: Run eslint with reviewdog
