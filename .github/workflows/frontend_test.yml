@@ -27,7 +27,7 @@ jobs:
 
       - name: Copy for test image
         run: |
-          sudo mkdir /public
+          sudo mkdir /src/public
           sudo cp ./frontend/public/noimage.png /public/noimage.png
 
       - name: Run Vitest
