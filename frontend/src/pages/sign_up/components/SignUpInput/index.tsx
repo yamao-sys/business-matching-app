@@ -8,7 +8,7 @@ import { PhaseType } from '../../types';
 import { SubmitButton } from '@/components/molucules/SubmitButton';
 import { BoxInputForm } from '@/components/molucules/BoxInputForm';
 import { ImageSelector } from '@/components/molucules/ImageSelector';
-import { postValidateSignUp } from '@/api/authApi';
+import { postValidateSignUp } from '@/apis/authApi';
 import { components } from '@/generated/auth/apiSchema';
 
 type Props = {
@@ -125,7 +125,7 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
         />
 
         <ImageSelector
-          labelId='front-identication'
+          labelId='front-identification'
           name='frontIdentification'
           labelText='身分証明書(表)'
           initialFileInput={supporterSignUpInput.frontIdentification}
@@ -135,7 +135,7 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
         />
 
         <ImageSelector
-          labelId='back-identication'
+          labelId='back-identification'
           name='backIdentification'
           labelText='身分証明書(裏)'
           initialFileInput={supporterSignUpInput.backIdentification}

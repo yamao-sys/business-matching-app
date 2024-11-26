@@ -1,4 +1,4 @@
-import { postSignUp } from '@/api/authApi';
+import { postSignUp } from '@/apis/authApi';
 import { useSupporterSignUpStateContext } from '../../contexts/SupporterSignUpContext';
 import { PhaseType } from '../../types';
 import { SignUpBaseLayout } from '../SignUpBaseLayout';
@@ -88,7 +88,7 @@ export const SignUpConfirmation: FC<Props> = ({ togglePhase }: Props) => {
               {frontIdentificationImageUrl ? (
                 <img
                   src={frontIdentificationImageUrl}
-                  alt='アップロード画像'
+                  alt='アップロード画像_身分証明書(表)'
                   style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                 />
               ) : (
@@ -116,7 +116,7 @@ export const SignUpConfirmation: FC<Props> = ({ togglePhase }: Props) => {
               {backIdentificationImageUrl ? (
                 <img
                   src={backIdentificationImageUrl}
-                  alt='アップロード画像'
+                  alt='アップロード画像_身分証明書(裏)'
                   style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                 />
               ) : (

@@ -11,6 +11,15 @@ export const BaseImageInput = forwardRef<HTMLInputElement, Props>(function BaseI
   ref,
 ) {
   return (
-    <input ref={ref} id={id} name={name} type='file' accept='image/*' onChange={onChange} hidden />
+    <input
+      ref={ref}
+      id={id}
+      name={name}
+      data-testid={id}
+      type='file'
+      accept='image/*'
+      onChange={onChange}
+      hidden
+    />
   );
 });

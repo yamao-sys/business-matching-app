@@ -116,7 +116,7 @@ export const ImageSelector: FC<Props> = memo<Props>(function ImageSelector({
           {imageUrl && imageFile ? (
             <img
               src={imageUrl}
-              alt='アップロード画像'
+              alt={`アップロード画像_${labelText}`}
               style={{ objectFit: 'cover', width: '100%', height: '100%' }}
             />
           ) : (
