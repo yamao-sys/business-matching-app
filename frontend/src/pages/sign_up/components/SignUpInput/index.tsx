@@ -125,7 +125,7 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
         />
 
         <ImageSelector
-          labelId='front-identication'
+          labelId='front-identification'
           name='frontIdentification'
           labelText='身分証明書(表)'
           initialFileInput={supporterSignUpInput.frontIdentification}
@@ -135,7 +135,7 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
         />
 
         <ImageSelector
-          labelId='back-identication'
+          labelId='back-identification'
           name='backIdentification'
           labelText='身分証明書(裏)'
           initialFileInput={supporterSignUpInput.backIdentification}

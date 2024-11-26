@@ -2,8 +2,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SignUpPage } from '.';
 
+import fs from 'fs';
+
 // userのセットアップ
 const user = userEvent.setup();
+
+const buffer = fs.readFileSync('/src/public/noimage.png');
+const inputFile = new File([buffer], 'identification.png', { type: 'image/png' });
 
 const postValidateSignUp = vi.hoisted(() => vi.fn(() => ({ errors: {} })));
 const postSignUp = vi.hoisted(() => vi.fn(() => ({ errors: {} })));
@@ -52,6 +57,8 @@ describe('pages/auth/sign_up/components/SignUpForm', () => {
       await user.type(screen.getByLabelText('名'), 'type_first_name');
       await user.type(screen.getByLabelText('Email'), 'type@example.com');
       await user.type(screen.getByLabelText('パスワード'), 'type_password');
+      await user.upload(screen.getByTestId('front-identification'), inputFile);
+      await user.upload(screen.getByTestId('back-identification'), inputFile);
 
       // NOTE: 確認画面への遷移
       await user.click(screen.getByRole('button', { name: '確認画面へ' }));
@@ -66,6 +73,8 @@ describe('pages/auth/sign_up/components/SignUpForm', () => {
       expect(screen.getByText('type_last_name_edited type_first_name')).toBeInTheDocument();
       expect(screen.getByText('type@example.com')).toBeInTheDocument();
       expect(screen.getByText('*************')).toBeInTheDocument();
+      expect(screen.getByAltText('アップロード画像_身分証明書(表)')).toBeInTheDocument();
+      expect(screen.getByAltText('アップロード画像_身分証明書(裏)')).toBeInTheDocument();
     });
 
     test('確認画面 → サンクス画面へ遷移できること', async () => {
@@ -76,6 +85,8 @@ describe('pages/auth/sign_up/components/SignUpForm', () => {
       await user.type(screen.getByLabelText('名'), 'type_first_name');
       await user.type(screen.getByLabelText('Email'), 'type@example.com');
       await user.type(screen.getByLabelText('パスワード'), 'type_password');
+      await user.upload(screen.getByTestId('front-identification'), inputFile);
+      await user.upload(screen.getByTestId('back-identification'), inputFile);
 
       // NOTE: 確認画面への遷移
       const submitButtonElement = screen.getByRole('button', { name: '確認画面へ' });
