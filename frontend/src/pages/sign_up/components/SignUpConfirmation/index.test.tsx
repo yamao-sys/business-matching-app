@@ -59,8 +59,7 @@ describe('pages/auth/sign_up/components/SignUpConfirmation', () => {
       </SupporterSignUpContextProvider>,
     );
 
-    const backToFormButton = screen.getByRole('button', { name: '入力へ戻る' });
-    await user.click(backToFormButton);
+    await user.click(screen.getByRole('button', { name: '入力へ戻る' }));
 
     expect(togglePhase).toHaveBeenCalled();
   });
@@ -72,8 +71,7 @@ describe('pages/auth/sign_up/components/SignUpConfirmation', () => {
       </SupporterSignUpContextProvider>,
     );
 
-    const backToFormButton = screen.getByRole('button', { name: '登録する' });
-    await user.click(backToFormButton);
+    await user.click(screen.getByRole('button', { name: '登録する' }));
 
     expect(togglePhase).toHaveBeenCalled();
   });
