@@ -33,5 +33,5 @@ jobs:
       - name: Run Vitest
         working-directory: ./frontend
         run: |
-          sudo cp ./public/noimage.png /public/noimage.png
+          sudo cp ./public/noimage.png /src/public/noimage.png
           npm run test
