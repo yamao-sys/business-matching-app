@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -28,6 +29,7 @@ type Supporter struct {
 	LastName            string    `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
 	Email               string    `boil:"email" json:"email" toml:"email" yaml:"email"`
 	Password            string    `boil:"password" json:"password" toml:"password" yaml:"password"`
+	Birthday            null.Time `boil:"birthday" json:"birthday,omitempty" toml:"birthday" yaml:"birthday,omitempty"`
 	FrontIdentification string    `boil:"front_identification" json:"front_identification" toml:"front_identification" yaml:"front_identification"`
 	BackIdentification  string    `boil:"back_identification" json:"back_identification" toml:"back_identification" yaml:"back_identification"`
 	CreatedAt           time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -43,6 +45,7 @@ var SupporterColumns = struct {
 	LastName            string
 	Email               string
 	Password            string
+	Birthday            string
 	FrontIdentification string
 	BackIdentification  string
 	CreatedAt           string
@@ -53,6 +56,7 @@ var SupporterColumns = struct {
 	LastName:            "last_name",
 	Email:               "email",
 	Password:            "password",
+	Birthday:            "birthday",
 	FrontIdentification: "front_identification",
 	BackIdentification:  "back_identification",
 	CreatedAt:           "created_at",
@@ -65,6 +69,7 @@ var SupporterTableColumns = struct {
 	LastName            string
 	Email               string
 	Password            string
+	Birthday            string
 	FrontIdentification string
 	BackIdentification  string
 	CreatedAt           string
@@ -75,6 +80,7 @@ var SupporterTableColumns = struct {
 	LastName:            "supporters.last_name",
 	Email:               "supporters.email",
 	Password:            "supporters.password",
+	Birthday:            "supporters.birthday",
 	FrontIdentification: "supporters.front_identification",
 	BackIdentification:  "supporters.back_identification",
 	CreatedAt:           "supporters.created_at",
@@ -133,6 +139,7 @@ var SupporterWhere = struct {
 	LastName            whereHelperstring
 	Email               whereHelperstring
 	Password            whereHelperstring
+	Birthday            whereHelpernull_Time
 	FrontIdentification whereHelperstring
 	BackIdentification  whereHelperstring
 	CreatedAt           whereHelpertime_Time
@@ -143,6 +150,7 @@ var SupporterWhere = struct {
 	LastName:            whereHelperstring{field: "`supporters`.`last_name`"},
 	Email:               whereHelperstring{field: "`supporters`.`email`"},
 	Password:            whereHelperstring{field: "`supporters`.`password`"},
+	Birthday:            whereHelpernull_Time{field: "`supporters`.`birthday`"},
 	FrontIdentification: whereHelperstring{field: "`supporters`.`front_identification`"},
 	BackIdentification:  whereHelperstring{field: "`supporters`.`back_identification`"},
 	CreatedAt:           whereHelpertime_Time{field: "`supporters`.`created_at`"},
@@ -166,8 +174,8 @@ func (*supporterR) NewStruct() *supporterR {
 type supporterL struct{}
 
 var (
-	supporterAllColumns            = []string{"id", "first_name", "last_name", "email", "password", "front_identification", "back_identification", "created_at", "updated_at"}
-	supporterColumnsWithoutDefault = []string{"first_name", "last_name", "email", "password", "front_identification", "back_identification", "created_at", "updated_at"}
+	supporterAllColumns            = []string{"id", "first_name", "last_name", "email", "password", "birthday", "front_identification", "back_identification", "created_at", "updated_at"}
+	supporterColumnsWithoutDefault = []string{"first_name", "last_name", "email", "password", "birthday", "front_identification", "back_identification", "created_at", "updated_at"}
 	supporterColumnsWithDefault    = []string{"id"}
 	supporterPrimaryKeyColumns     = []string{"id"}
 	supporterGeneratedColumns      = []string{}

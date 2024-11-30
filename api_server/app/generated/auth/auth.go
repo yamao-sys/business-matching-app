@@ -18,6 +18,7 @@ import (
 // SupporterSignUpValidationError defines model for SupporterSignUpValidationError.
 type SupporterSignUpValidationError struct {
 	BackIdentification  *[]string `json:"backIdentification,omitempty"`
+	Birthday            *[]string `json:"birthday,omitempty"`
 	Email               *[]string `json:"email,omitempty"`
 	FirstName           *[]string `json:"firstName,omitempty"`
 	FrontIdentification *[]string `json:"frontIdentification,omitempty"`
@@ -40,6 +41,7 @@ type SupporterSignUpResponse struct {
 // PostAuthSignUpMultipartBody defines parameters for PostAuthSignUp.
 type PostAuthSignUpMultipartBody struct {
 	BackIdentification  *openapi_types.File `json:"backIdentification,omitempty"`
+	Birthday            *openapi_types.Date `json:"birthday,omitempty"`
 	Email               string              `json:"email"`
 	FirstName           string              `json:"firstName"`
 	FrontIdentification *openapi_types.File `json:"frontIdentification,omitempty"`
@@ -50,6 +52,7 @@ type PostAuthSignUpMultipartBody struct {
 // PostAuthValidateSignUpMultipartBody defines parameters for PostAuthValidateSignUp.
 type PostAuthValidateSignUpMultipartBody struct {
 	BackIdentification  *openapi_types.File `json:"backIdentification,omitempty"`
+	Birthday            *openapi_types.Date `json:"birthday,omitempty"`
 	Email               string              `json:"email"`
 	FirstName           string              `json:"firstName"`
 	FrontIdentification *openapi_types.File `json:"frontIdentification,omitempty"`
