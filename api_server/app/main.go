@@ -4,6 +4,7 @@ import (
 	"app/controllers"
 	"app/db"
 	"app/generated/auth"
+	"app/generated/companies"
 	"app/generated/specialities"
 	"app/services"
 	"net/http"
@@ -18,6 +19,7 @@ func main() {
 
 	// NOTE: service層のインスタンス化
 	authService := services.NewAuthService(dbCon)
+	companyService := services.NewCompanyService(dbCon)
 
 	// NOTE: controllerをHandlerに追加
 	server := controllers.NewAuthController(authService)
@@ -25,6 +27,9 @@ func main() {
 
 	specialitiesServer := controllers.NewSpecialitiesController()
 	specialitiesStrictHandler := specialities.NewStrictHandler(specialitiesServer, nil)
+
+	companiesServer := controllers.NewCompaniesController(companyService)
+	companiesStrictHandler := companies.NewStrictHandler(companiesServer, nil)
 
 	// NOTE: Handlerをルーティングに追加
 	e := echo.New()
@@ -34,6 +39,7 @@ func main() {
 	}))
 	auth.RegisterHandlers(e, strictHandler)
 	specialities.RegisterHandlers(e, specialitiesStrictHandler)
+	companies.RegisterHandlers(e, companiesStrictHandler)
 
 	e.Logger.Fatal(e.Start(":" + os.Getenv("SERVER_PORT")))
 }

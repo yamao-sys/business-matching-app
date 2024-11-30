@@ -1,0 +1,119 @@
+openapi: 3.1.0
+info:
+  title: business-matching-app
+  version: '1.0'
+  summary: ''
+  description: Business Matching App Company APIs
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  /companies/validateSignUp:
+    post:
+      summary: Company Validate SignUp
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanySignUpResponse'
+        '400':
+          $ref: '#/components/responses/CompanySignUpResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+      operationId: post-auth-validate_sign_up
+      requestBody:
+        $ref: '#/components/requestBodies/CompanySignUpInput'
+      description: validate sign up
+      tags:
+        - auth
+  /companies/signUp:
+    post:
+      summary: Company SignUp
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanySignUpResponse'
+        '400':
+          $ref: '#/components/responses/CompanySignUpResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+      operationId: post-auth-sign_up
+      requestBody:
+        $ref: '#/components/requestBodies/CompanySignUpInput'
+components:
+  schemas:
+    CompanySignUpValidationError:
+      title: CompanySignUpValidationError
+      type: object
+      properties:
+        name:
+          type: array
+          items:
+            type: string
+        tel:
+          type: array
+          items:
+            type: string
+        email:
+          type: array
+          items:
+            type: string
+        password:
+          type: array
+          items:
+            type: string
+  requestBodies:
+    CompanySignUpInput:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+              - tel
+              - email
+              - password
+            properties:
+              name:
+                type: string
+              tel:
+                type: string
+              email:
+                type: string
+              password:
+                type: string
+      description: SignUp Company Iuput
+  responses:
+    CompanySignUpResponse:
+      description: ''
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - errors
+            properties:
+              code:
+                type: integer
+                format: int64
+              errors:
+                type: object
+                $ref: '#/components/schemas/CompanySignUpValidationError'
+    InternalServerErrorResponse:
+      description: Internal Server Error Response
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - message
+            properties:
+              code:
+                type: integer
+                format: int64
+              message:
+                type: string
+tags:
+  - name: companies
+    description: companies end point
+  - name: business matching app
+    description: business matching app
