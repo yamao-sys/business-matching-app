@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -22,144 +21,192 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
-// Supporter is an object representing the database table.
-type Supporter struct {
-	ID                  int       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	FirstName           string    `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
-	LastName            string    `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
-	Email               string    `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Password            string    `boil:"password" json:"password" toml:"password" yaml:"password"`
-	Birthday            null.Time `boil:"birthday" json:"birthday,omitempty" toml:"birthday" yaml:"birthday,omitempty"`
-	FrontIdentification string    `boil:"front_identification" json:"front_identification" toml:"front_identification" yaml:"front_identification"`
-	BackIdentification  string    `boil:"back_identification" json:"back_identification" toml:"back_identification" yaml:"back_identification"`
-	CreatedAt           time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt           time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+// Company is an object representing the database table.
+type Company struct {
+	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Tel       string    `boil:"tel" json:"tel" toml:"tel" yaml:"tel"`
+	Email     string    `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Password  string    `boil:"password" json:"password" toml:"password" yaml:"password"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
-	R *supporterR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L supporterL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *companyR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L companyL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
-var SupporterColumns = struct {
-	ID                  string
-	FirstName           string
-	LastName            string
-	Email               string
-	Password            string
-	Birthday            string
-	FrontIdentification string
-	BackIdentification  string
-	CreatedAt           string
-	UpdatedAt           string
+var CompanyColumns = struct {
+	ID        string
+	Name      string
+	Tel       string
+	Email     string
+	Password  string
+	CreatedAt string
+	UpdatedAt string
 }{
-	ID:                  "id",
-	FirstName:           "first_name",
-	LastName:            "last_name",
-	Email:               "email",
-	Password:            "password",
-	Birthday:            "birthday",
-	FrontIdentification: "front_identification",
-	BackIdentification:  "back_identification",
-	CreatedAt:           "created_at",
-	UpdatedAt:           "updated_at",
+	ID:        "id",
+	Name:      "name",
+	Tel:       "tel",
+	Email:     "email",
+	Password:  "password",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
-var SupporterTableColumns = struct {
-	ID                  string
-	FirstName           string
-	LastName            string
-	Email               string
-	Password            string
-	Birthday            string
-	FrontIdentification string
-	BackIdentification  string
-	CreatedAt           string
-	UpdatedAt           string
+var CompanyTableColumns = struct {
+	ID        string
+	Name      string
+	Tel       string
+	Email     string
+	Password  string
+	CreatedAt string
+	UpdatedAt string
 }{
-	ID:                  "supporters.id",
-	FirstName:           "supporters.first_name",
-	LastName:            "supporters.last_name",
-	Email:               "supporters.email",
-	Password:            "supporters.password",
-	Birthday:            "supporters.birthday",
-	FrontIdentification: "supporters.front_identification",
-	BackIdentification:  "supporters.back_identification",
-	CreatedAt:           "supporters.created_at",
-	UpdatedAt:           "supporters.updated_at",
+	ID:        "companies.id",
+	Name:      "companies.name",
+	Tel:       "companies.tel",
+	Email:     "companies.email",
+	Password:  "companies.password",
+	CreatedAt: "companies.created_at",
+	UpdatedAt: "companies.updated_at",
 }
 
 // Generated where
 
-var SupporterWhere = struct {
-	ID                  whereHelperint
-	FirstName           whereHelperstring
-	LastName            whereHelperstring
-	Email               whereHelperstring
-	Password            whereHelperstring
-	Birthday            whereHelpernull_Time
-	FrontIdentification whereHelperstring
-	BackIdentification  whereHelperstring
-	CreatedAt           whereHelpertime_Time
-	UpdatedAt           whereHelpertime_Time
-}{
-	ID:                  whereHelperint{field: "`supporters`.`id`"},
-	FirstName:           whereHelperstring{field: "`supporters`.`first_name`"},
-	LastName:            whereHelperstring{field: "`supporters`.`last_name`"},
-	Email:               whereHelperstring{field: "`supporters`.`email`"},
-	Password:            whereHelperstring{field: "`supporters`.`password`"},
-	Birthday:            whereHelpernull_Time{field: "`supporters`.`birthday`"},
-	FrontIdentification: whereHelperstring{field: "`supporters`.`front_identification`"},
-	BackIdentification:  whereHelperstring{field: "`supporters`.`back_identification`"},
-	CreatedAt:           whereHelpertime_Time{field: "`supporters`.`created_at`"},
-	UpdatedAt:           whereHelpertime_Time{field: "`supporters`.`updated_at`"},
+type whereHelperint struct{ field string }
+
+func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperint) NIN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-// SupporterRels is where relationship names are stored.
-var SupporterRels = struct {
+type whereHelperstring struct{ field string }
+
+func (w whereHelperstring) EQ(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperstring) NEQ(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperstring) LT(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperstring) LTE(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperstring) GT(x string) qm.QueryMod    { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperstring) GTE(x string) qm.QueryMod   { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperstring) LIKE(x string) qm.QueryMod  { return qm.Where(w.field+" LIKE ?", x) }
+func (w whereHelperstring) NLIKE(x string) qm.QueryMod { return qm.Where(w.field+" NOT LIKE ?", x) }
+func (w whereHelperstring) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+type whereHelpertime_Time struct{ field string }
+
+func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
+var CompanyWhere = struct {
+	ID        whereHelperint
+	Name      whereHelperstring
+	Tel       whereHelperstring
+	Email     whereHelperstring
+	Password  whereHelperstring
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
+}{
+	ID:        whereHelperint{field: "`companies`.`id`"},
+	Name:      whereHelperstring{field: "`companies`.`name`"},
+	Tel:       whereHelperstring{field: "`companies`.`tel`"},
+	Email:     whereHelperstring{field: "`companies`.`email`"},
+	Password:  whereHelperstring{field: "`companies`.`password`"},
+	CreatedAt: whereHelpertime_Time{field: "`companies`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`companies`.`updated_at`"},
+}
+
+// CompanyRels is where relationship names are stored.
+var CompanyRels = struct {
 }{}
 
-// supporterR is where relationships are stored.
-type supporterR struct {
+// companyR is where relationships are stored.
+type companyR struct {
 }
 
 // NewStruct creates a new relationship struct
-func (*supporterR) NewStruct() *supporterR {
-	return &supporterR{}
+func (*companyR) NewStruct() *companyR {
+	return &companyR{}
 }
 
-// supporterL is where Load methods for each relationship are stored.
-type supporterL struct{}
+// companyL is where Load methods for each relationship are stored.
+type companyL struct{}
 
 var (
-	supporterAllColumns            = []string{"id", "first_name", "last_name", "email", "password", "birthday", "front_identification", "back_identification", "created_at", "updated_at"}
-	supporterColumnsWithoutDefault = []string{"first_name", "last_name", "email", "password", "birthday", "front_identification", "back_identification", "created_at", "updated_at"}
-	supporterColumnsWithDefault    = []string{"id"}
-	supporterPrimaryKeyColumns     = []string{"id"}
-	supporterGeneratedColumns      = []string{}
+	companyAllColumns            = []string{"id", "name", "tel", "email", "password", "created_at", "updated_at"}
+	companyColumnsWithoutDefault = []string{"name", "tel", "email", "password", "created_at", "updated_at"}
+	companyColumnsWithDefault    = []string{"id"}
+	companyPrimaryKeyColumns     = []string{"id"}
+	companyGeneratedColumns      = []string{}
 )
 
 type (
-	// SupporterSlice is an alias for a slice of pointers to Supporter.
-	// This should almost always be used instead of []Supporter.
-	SupporterSlice []*Supporter
-	// SupporterHook is the signature for custom Supporter hook methods
-	SupporterHook func(context.Context, boil.ContextExecutor, *Supporter) error
+	// CompanySlice is an alias for a slice of pointers to Company.
+	// This should almost always be used instead of []Company.
+	CompanySlice []*Company
+	// CompanyHook is the signature for custom Company hook methods
+	CompanyHook func(context.Context, boil.ContextExecutor, *Company) error
 
-	supporterQuery struct {
+	companyQuery struct {
 		*queries.Query
 	}
 )
 
 // Cache for insert, update and upsert
 var (
-	supporterType                 = reflect.TypeOf(&Supporter{})
-	supporterMapping              = queries.MakeStructMapping(supporterType)
-	supporterPrimaryKeyMapping, _ = queries.BindMapping(supporterType, supporterMapping, supporterPrimaryKeyColumns)
-	supporterInsertCacheMut       sync.RWMutex
-	supporterInsertCache          = make(map[string]insertCache)
-	supporterUpdateCacheMut       sync.RWMutex
-	supporterUpdateCache          = make(map[string]updateCache)
-	supporterUpsertCacheMut       sync.RWMutex
-	supporterUpsertCache          = make(map[string]insertCache)
+	companyType                 = reflect.TypeOf(&Company{})
+	companyMapping              = queries.MakeStructMapping(companyType)
+	companyPrimaryKeyMapping, _ = queries.BindMapping(companyType, companyMapping, companyPrimaryKeyColumns)
+	companyInsertCacheMut       sync.RWMutex
+	companyInsertCache          = make(map[string]insertCache)
+	companyUpdateCacheMut       sync.RWMutex
+	companyUpdateCache          = make(map[string]updateCache)
+	companyUpsertCacheMut       sync.RWMutex
+	companyUpsertCache          = make(map[string]insertCache)
 )
 
 var (
@@ -170,36 +217,36 @@ var (
 	_ = qmhelper.Where
 )
 
-var supporterAfterSelectMu sync.Mutex
-var supporterAfterSelectHooks []SupporterHook
+var companyAfterSelectMu sync.Mutex
+var companyAfterSelectHooks []CompanyHook
 
-var supporterBeforeInsertMu sync.Mutex
-var supporterBeforeInsertHooks []SupporterHook
-var supporterAfterInsertMu sync.Mutex
-var supporterAfterInsertHooks []SupporterHook
+var companyBeforeInsertMu sync.Mutex
+var companyBeforeInsertHooks []CompanyHook
+var companyAfterInsertMu sync.Mutex
+var companyAfterInsertHooks []CompanyHook
 
-var supporterBeforeUpdateMu sync.Mutex
-var supporterBeforeUpdateHooks []SupporterHook
-var supporterAfterUpdateMu sync.Mutex
-var supporterAfterUpdateHooks []SupporterHook
+var companyBeforeUpdateMu sync.Mutex
+var companyBeforeUpdateHooks []CompanyHook
+var companyAfterUpdateMu sync.Mutex
+var companyAfterUpdateHooks []CompanyHook
 
-var supporterBeforeDeleteMu sync.Mutex
-var supporterBeforeDeleteHooks []SupporterHook
-var supporterAfterDeleteMu sync.Mutex
-var supporterAfterDeleteHooks []SupporterHook
+var companyBeforeDeleteMu sync.Mutex
+var companyBeforeDeleteHooks []CompanyHook
+var companyAfterDeleteMu sync.Mutex
+var companyAfterDeleteHooks []CompanyHook
 
-var supporterBeforeUpsertMu sync.Mutex
-var supporterBeforeUpsertHooks []SupporterHook
-var supporterAfterUpsertMu sync.Mutex
-var supporterAfterUpsertHooks []SupporterHook
+var companyBeforeUpsertMu sync.Mutex
+var companyBeforeUpsertHooks []CompanyHook
+var companyAfterUpsertMu sync.Mutex
+var companyAfterUpsertHooks []CompanyHook
 
 // doAfterSelectHooks executes all "after Select" hooks.
-func (o *Supporter) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterAfterSelectHooks {
+	for _, hook := range companyAfterSelectHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -209,12 +256,12 @@ func (o *Supporter) doAfterSelectHooks(ctx context.Context, exec boil.ContextExe
 }
 
 // doBeforeInsertHooks executes all "before insert" hooks.
-func (o *Supporter) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterBeforeInsertHooks {
+	for _, hook := range companyBeforeInsertHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -224,12 +271,12 @@ func (o *Supporter) doBeforeInsertHooks(ctx context.Context, exec boil.ContextEx
 }
 
 // doAfterInsertHooks executes all "after Insert" hooks.
-func (o *Supporter) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterAfterInsertHooks {
+	for _, hook := range companyAfterInsertHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -239,12 +286,12 @@ func (o *Supporter) doAfterInsertHooks(ctx context.Context, exec boil.ContextExe
 }
 
 // doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *Supporter) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterBeforeUpdateHooks {
+	for _, hook := range companyBeforeUpdateHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -254,12 +301,12 @@ func (o *Supporter) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextEx
 }
 
 // doAfterUpdateHooks executes all "after Update" hooks.
-func (o *Supporter) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterAfterUpdateHooks {
+	for _, hook := range companyAfterUpdateHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -269,12 +316,12 @@ func (o *Supporter) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExe
 }
 
 // doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *Supporter) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterBeforeDeleteHooks {
+	for _, hook := range companyBeforeDeleteHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -284,12 +331,12 @@ func (o *Supporter) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextEx
 }
 
 // doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *Supporter) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterAfterDeleteHooks {
+	for _, hook := range companyAfterDeleteHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -299,12 +346,12 @@ func (o *Supporter) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExe
 }
 
 // doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *Supporter) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterBeforeUpsertHooks {
+	for _, hook := range companyBeforeUpsertHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -314,12 +361,12 @@ func (o *Supporter) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextEx
 }
 
 // doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *Supporter) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+func (o *Company) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	for _, hook := range supporterAfterUpsertHooks {
+	for _, hook := range companyAfterUpsertHooks {
 		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
@@ -328,51 +375,51 @@ func (o *Supporter) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExe
 	return nil
 }
 
-// AddSupporterHook registers your hook function for all future operations.
-func AddSupporterHook(hookPoint boil.HookPoint, supporterHook SupporterHook) {
+// AddCompanyHook registers your hook function for all future operations.
+func AddCompanyHook(hookPoint boil.HookPoint, companyHook CompanyHook) {
 	switch hookPoint {
 	case boil.AfterSelectHook:
-		supporterAfterSelectMu.Lock()
-		supporterAfterSelectHooks = append(supporterAfterSelectHooks, supporterHook)
-		supporterAfterSelectMu.Unlock()
+		companyAfterSelectMu.Lock()
+		companyAfterSelectHooks = append(companyAfterSelectHooks, companyHook)
+		companyAfterSelectMu.Unlock()
 	case boil.BeforeInsertHook:
-		supporterBeforeInsertMu.Lock()
-		supporterBeforeInsertHooks = append(supporterBeforeInsertHooks, supporterHook)
-		supporterBeforeInsertMu.Unlock()
+		companyBeforeInsertMu.Lock()
+		companyBeforeInsertHooks = append(companyBeforeInsertHooks, companyHook)
+		companyBeforeInsertMu.Unlock()
 	case boil.AfterInsertHook:
-		supporterAfterInsertMu.Lock()
-		supporterAfterInsertHooks = append(supporterAfterInsertHooks, supporterHook)
-		supporterAfterInsertMu.Unlock()
+		companyAfterInsertMu.Lock()
+		companyAfterInsertHooks = append(companyAfterInsertHooks, companyHook)
+		companyAfterInsertMu.Unlock()
 	case boil.BeforeUpdateHook:
-		supporterBeforeUpdateMu.Lock()
-		supporterBeforeUpdateHooks = append(supporterBeforeUpdateHooks, supporterHook)
-		supporterBeforeUpdateMu.Unlock()
+		companyBeforeUpdateMu.Lock()
+		companyBeforeUpdateHooks = append(companyBeforeUpdateHooks, companyHook)
+		companyBeforeUpdateMu.Unlock()
 	case boil.AfterUpdateHook:
-		supporterAfterUpdateMu.Lock()
-		supporterAfterUpdateHooks = append(supporterAfterUpdateHooks, supporterHook)
-		supporterAfterUpdateMu.Unlock()
+		companyAfterUpdateMu.Lock()
+		companyAfterUpdateHooks = append(companyAfterUpdateHooks, companyHook)
+		companyAfterUpdateMu.Unlock()
 	case boil.BeforeDeleteHook:
-		supporterBeforeDeleteMu.Lock()
-		supporterBeforeDeleteHooks = append(supporterBeforeDeleteHooks, supporterHook)
-		supporterBeforeDeleteMu.Unlock()
+		companyBeforeDeleteMu.Lock()
+		companyBeforeDeleteHooks = append(companyBeforeDeleteHooks, companyHook)
+		companyBeforeDeleteMu.Unlock()
 	case boil.AfterDeleteHook:
-		supporterAfterDeleteMu.Lock()
-		supporterAfterDeleteHooks = append(supporterAfterDeleteHooks, supporterHook)
-		supporterAfterDeleteMu.Unlock()
+		companyAfterDeleteMu.Lock()
+		companyAfterDeleteHooks = append(companyAfterDeleteHooks, companyHook)
+		companyAfterDeleteMu.Unlock()
 	case boil.BeforeUpsertHook:
-		supporterBeforeUpsertMu.Lock()
-		supporterBeforeUpsertHooks = append(supporterBeforeUpsertHooks, supporterHook)
-		supporterBeforeUpsertMu.Unlock()
+		companyBeforeUpsertMu.Lock()
+		companyBeforeUpsertHooks = append(companyBeforeUpsertHooks, companyHook)
+		companyBeforeUpsertMu.Unlock()
 	case boil.AfterUpsertHook:
-		supporterAfterUpsertMu.Lock()
-		supporterAfterUpsertHooks = append(supporterAfterUpsertHooks, supporterHook)
-		supporterAfterUpsertMu.Unlock()
+		companyAfterUpsertMu.Lock()
+		companyAfterUpsertHooks = append(companyAfterUpsertHooks, companyHook)
+		companyAfterUpsertMu.Unlock()
 	}
 }
 
-// One returns a single supporter record from the query.
-func (q supporterQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Supporter, error) {
-	o := &Supporter{}
+// One returns a single company record from the query.
+func (q companyQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Company, error) {
+	o := &Company{}
 
 	queries.SetLimit(q.Query, 1)
 
@@ -381,7 +428,7 @@ func (q supporterQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Su
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "models: failed to execute a one query for supporters")
+		return nil, errors.Wrap(err, "models: failed to execute a one query for companies")
 	}
 
 	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
@@ -391,16 +438,16 @@ func (q supporterQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Su
 	return o, nil
 }
 
-// All returns all Supporter records from the query.
-func (q supporterQuery) All(ctx context.Context, exec boil.ContextExecutor) (SupporterSlice, error) {
-	var o []*Supporter
+// All returns all Company records from the query.
+func (q companyQuery) All(ctx context.Context, exec boil.ContextExecutor) (CompanySlice, error) {
+	var o []*Company
 
 	err := q.Bind(ctx, exec, &o)
 	if err != nil {
-		return nil, errors.Wrap(err, "models: failed to assign all query results to Supporter slice")
+		return nil, errors.Wrap(err, "models: failed to assign all query results to Company slice")
 	}
 
-	if len(supporterAfterSelectHooks) != 0 {
+	if len(companyAfterSelectHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterSelectHooks(ctx, exec); err != nil {
 				return o, err
@@ -411,8 +458,8 @@ func (q supporterQuery) All(ctx context.Context, exec boil.ContextExecutor) (Sup
 	return o, nil
 }
 
-// Count returns the count of all Supporter records in the query.
-func (q supporterQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+// Count returns the count of all Company records in the query.
+func (q companyQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
@@ -420,14 +467,14 @@ func (q supporterQuery) Count(ctx context.Context, exec boil.ContextExecutor) (i
 
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to count supporters rows")
+		return 0, errors.Wrap(err, "models: failed to count companies rows")
 	}
 
 	return count, nil
 }
 
 // Exists checks if the row exists in the table.
-func (q supporterQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+func (q companyQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
@@ -436,58 +483,58 @@ func (q supporterQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (
 
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
-		return false, errors.Wrap(err, "models: failed to check if supporters exists")
+		return false, errors.Wrap(err, "models: failed to check if companies exists")
 	}
 
 	return count > 0, nil
 }
 
-// Supporters retrieves all the records using an executor.
-func Supporters(mods ...qm.QueryMod) supporterQuery {
-	mods = append(mods, qm.From("`supporters`"))
+// Companies retrieves all the records using an executor.
+func Companies(mods ...qm.QueryMod) companyQuery {
+	mods = append(mods, qm.From("`companies`"))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
-		queries.SetSelect(q, []string{"`supporters`.*"})
+		queries.SetSelect(q, []string{"`companies`.*"})
 	}
 
-	return supporterQuery{q}
+	return companyQuery{q}
 }
 
-// FindSupporter retrieves a single record by ID with an executor.
+// FindCompany retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindSupporter(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Supporter, error) {
-	supporterObj := &Supporter{}
+func FindCompany(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Company, error) {
+	companyObj := &Company{}
 
 	sel := "*"
 	if len(selectCols) > 0 {
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `supporters` where `id`=?", sel,
+		"select %s from `companies` where `id`=?", sel,
 	)
 
 	q := queries.Raw(query, iD)
 
-	err := q.Bind(ctx, exec, supporterObj)
+	err := q.Bind(ctx, exec, companyObj)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "models: unable to select from supporters")
+		return nil, errors.Wrap(err, "models: unable to select from companies")
 	}
 
-	if err = supporterObj.doAfterSelectHooks(ctx, exec); err != nil {
-		return supporterObj, err
+	if err = companyObj.doAfterSelectHooks(ctx, exec); err != nil {
+		return companyObj, err
 	}
 
-	return supporterObj, nil
+	return companyObj, nil
 }
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *Supporter) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
+func (o *Company) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
 	if o == nil {
-		return errors.New("models: no supporters provided for insertion")
+		return errors.New("models: no companies provided for insertion")
 	}
 
 	var err error
@@ -506,39 +553,39 @@ func (o *Supporter) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 		return err
 	}
 
-	nzDefaults := queries.NonZeroDefaultSet(supporterColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(companyColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
-	supporterInsertCacheMut.RLock()
-	cache, cached := supporterInsertCache[key]
-	supporterInsertCacheMut.RUnlock()
+	companyInsertCacheMut.RLock()
+	cache, cached := companyInsertCache[key]
+	companyInsertCacheMut.RUnlock()
 
 	if !cached {
 		wl, returnColumns := columns.InsertColumnSet(
-			supporterAllColumns,
-			supporterColumnsWithDefault,
-			supporterColumnsWithoutDefault,
+			companyAllColumns,
+			companyColumnsWithDefault,
+			companyColumnsWithoutDefault,
 			nzDefaults,
 		)
 
-		cache.valueMapping, err = queries.BindMapping(supporterType, supporterMapping, wl)
+		cache.valueMapping, err = queries.BindMapping(companyType, companyMapping, wl)
 		if err != nil {
 			return err
 		}
-		cache.retMapping, err = queries.BindMapping(supporterType, supporterMapping, returnColumns)
+		cache.retMapping, err = queries.BindMapping(companyType, companyMapping, returnColumns)
 		if err != nil {
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO `supporters` (`%s`) %%sVALUES (%s)%%s", strings.Join(wl, "`,`"), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO `companies` (`%s`) %%sVALUES (%s)%%s", strings.Join(wl, "`,`"), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO `supporters` () VALUES ()%s%s"
+			cache.query = "INSERT INTO `companies` () VALUES ()%s%s"
 		}
 
 		var queryOutput, queryReturning string
 
 		if len(cache.retMapping) != 0 {
-			cache.retQuery = fmt.Sprintf("SELECT `%s` FROM `supporters` WHERE %s", strings.Join(returnColumns, "`,`"), strmangle.WhereClause("`", "`", 0, supporterPrimaryKeyColumns))
+			cache.retQuery = fmt.Sprintf("SELECT `%s` FROM `companies` WHERE %s", strings.Join(returnColumns, "`,`"), strmangle.WhereClause("`", "`", 0, companyPrimaryKeyColumns))
 		}
 
 		cache.query = fmt.Sprintf(cache.query, queryOutput, queryReturning)
@@ -555,7 +602,7 @@ func (o *Supporter) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
-		return errors.Wrap(err, "models: unable to insert into supporters")
+		return errors.Wrap(err, "models: unable to insert into companies")
 	}
 
 	var lastID int64
@@ -571,7 +618,7 @@ func (o *Supporter) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 
 	o.ID = int(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == supporterMapping["id"] {
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == companyMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -586,23 +633,23 @@ func (o *Supporter) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 	err = exec.QueryRowContext(ctx, cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to populate default values for supporters")
+		return errors.Wrap(err, "models: unable to populate default values for companies")
 	}
 
 CacheNoHooks:
 	if !cached {
-		supporterInsertCacheMut.Lock()
-		supporterInsertCache[key] = cache
-		supporterInsertCacheMut.Unlock()
+		companyInsertCacheMut.Lock()
+		companyInsertCache[key] = cache
+		companyInsertCacheMut.Unlock()
 	}
 
 	return o.doAfterInsertHooks(ctx, exec)
 }
 
-// Update uses an executor to update the Supporter.
+// Update uses an executor to update the Company.
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
-func (o *Supporter) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o *Company) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	if !boil.TimestampsAreSkipped(ctx) {
 		currTime := time.Now().In(boil.GetLocation())
 
@@ -614,28 +661,28 @@ func (o *Supporter) Update(ctx context.Context, exec boil.ContextExecutor, colum
 		return 0, err
 	}
 	key := makeCacheKey(columns, nil)
-	supporterUpdateCacheMut.RLock()
-	cache, cached := supporterUpdateCache[key]
-	supporterUpdateCacheMut.RUnlock()
+	companyUpdateCacheMut.RLock()
+	cache, cached := companyUpdateCache[key]
+	companyUpdateCacheMut.RUnlock()
 
 	if !cached {
 		wl := columns.UpdateColumnSet(
-			supporterAllColumns,
-			supporterPrimaryKeyColumns,
+			companyAllColumns,
+			companyPrimaryKeyColumns,
 		)
 
 		if !columns.IsWhitelist() {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}
 		if len(wl) == 0 {
-			return 0, errors.New("models: unable to update supporters, could not build whitelist")
+			return 0, errors.New("models: unable to update companies, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE `supporters` SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE `companies` SET %s WHERE %s",
 			strmangle.SetParamNames("`", "`", 0, wl),
-			strmangle.WhereClause("`", "`", 0, supporterPrimaryKeyColumns),
+			strmangle.WhereClause("`", "`", 0, companyPrimaryKeyColumns),
 		)
-		cache.valueMapping, err = queries.BindMapping(supporterType, supporterMapping, append(wl, supporterPrimaryKeyColumns...))
+		cache.valueMapping, err = queries.BindMapping(companyType, companyMapping, append(wl, companyPrimaryKeyColumns...))
 		if err != nil {
 			return 0, err
 		}
@@ -651,42 +698,42 @@ func (o *Supporter) Update(ctx context.Context, exec boil.ContextExecutor, colum
 	var result sql.Result
 	result, err = exec.ExecContext(ctx, cache.query, values...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update supporters row")
+		return 0, errors.Wrap(err, "models: unable to update companies row")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by update for supporters")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by update for companies")
 	}
 
 	if !cached {
-		supporterUpdateCacheMut.Lock()
-		supporterUpdateCache[key] = cache
-		supporterUpdateCacheMut.Unlock()
+		companyUpdateCacheMut.Lock()
+		companyUpdateCache[key] = cache
+		companyUpdateCacheMut.Unlock()
 	}
 
 	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q supporterQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (q companyQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
 	queries.SetUpdate(q.Query, cols)
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update all for supporters")
+		return 0, errors.Wrap(err, "models: unable to update all for companies")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to retrieve rows affected for supporters")
+		return 0, errors.Wrap(err, "models: unable to retrieve rows affected for companies")
 	}
 
 	return rowsAff, nil
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o SupporterSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
+func (o CompanySlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols M) (int64, error) {
 	ln := int64(len(o))
 	if ln == 0 {
 		return 0, nil
@@ -708,13 +755,13 @@ func (o SupporterSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 
 	// Append all of the primary key values for each column
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), supporterPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), companyPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE `supporters` SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE `companies` SET %s WHERE %s",
 		strmangle.SetParamNames("`", "`", 0, colNames),
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, supporterPrimaryKeyColumns, len(o)))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, companyPrimaryKeyColumns, len(o)))
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -723,26 +770,26 @@ func (o SupporterSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor
 	}
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update all in supporter slice")
+		return 0, errors.Wrap(err, "models: unable to update all in company slice")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to retrieve rows affected all in update all supporter")
+		return 0, errors.Wrap(err, "models: unable to retrieve rows affected all in update all company")
 	}
 	return rowsAff, nil
 }
 
-var mySQLSupporterUniqueColumns = []string{
+var mySQLCompanyUniqueColumns = []string{
 	"id",
 	"email",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *Supporter) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
+func (o *Company) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
-		return errors.New("models: no supporters provided for upsert")
+		return errors.New("models: no companies provided for upsert")
 	}
 	if !boil.TimestampsAreSkipped(ctx) {
 		currTime := time.Now().In(boil.GetLocation())
@@ -757,8 +804,8 @@ func (o *Supporter) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 		return err
 	}
 
-	nzDefaults := queries.NonZeroDefaultSet(supporterColumnsWithDefault, o)
-	nzUniques := queries.NonZeroDefaultSet(mySQLSupporterUniqueColumns, o)
+	nzDefaults := queries.NonZeroDefaultSet(companyColumnsWithDefault, o)
+	nzUniques := queries.NonZeroDefaultSet(mySQLCompanyUniqueColumns, o)
 
 	if len(nzUniques) == 0 {
 		return errors.New("cannot upsert with a table that cannot conflict on a unique column")
@@ -786,44 +833,44 @@ func (o *Supporter) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
-	supporterUpsertCacheMut.RLock()
-	cache, cached := supporterUpsertCache[key]
-	supporterUpsertCacheMut.RUnlock()
+	companyUpsertCacheMut.RLock()
+	cache, cached := companyUpsertCache[key]
+	companyUpsertCacheMut.RUnlock()
 
 	var err error
 
 	if !cached {
 		insert, _ := insertColumns.InsertColumnSet(
-			supporterAllColumns,
-			supporterColumnsWithDefault,
-			supporterColumnsWithoutDefault,
+			companyAllColumns,
+			companyColumnsWithDefault,
+			companyColumnsWithoutDefault,
 			nzDefaults,
 		)
 
 		update := updateColumns.UpdateColumnSet(
-			supporterAllColumns,
-			supporterPrimaryKeyColumns,
+			companyAllColumns,
+			companyPrimaryKeyColumns,
 		)
 
 		if !updateColumns.IsNone() && len(update) == 0 {
-			return errors.New("models: unable to upsert supporters, could not build update column list")
+			return errors.New("models: unable to upsert companies, could not build update column list")
 		}
 
-		ret := strmangle.SetComplement(supporterAllColumns, strmangle.SetIntersect(insert, update))
+		ret := strmangle.SetComplement(companyAllColumns, strmangle.SetIntersect(insert, update))
 
-		cache.query = buildUpsertQueryMySQL(dialect, "`supporters`", update, insert)
+		cache.query = buildUpsertQueryMySQL(dialect, "`companies`", update, insert)
 		cache.retQuery = fmt.Sprintf(
-			"SELECT %s FROM `supporters` WHERE %s",
+			"SELECT %s FROM `companies` WHERE %s",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),
 			strmangle.WhereClause("`", "`", 0, nzUniques),
 		)
 
-		cache.valueMapping, err = queries.BindMapping(supporterType, supporterMapping, insert)
+		cache.valueMapping, err = queries.BindMapping(companyType, companyMapping, insert)
 		if err != nil {
 			return err
 		}
 		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(supporterType, supporterMapping, ret)
+			cache.retMapping, err = queries.BindMapping(companyType, companyMapping, ret)
 			if err != nil {
 				return err
 			}
@@ -845,7 +892,7 @@ func (o *Supporter) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
-		return errors.Wrap(err, "models: unable to upsert for supporters")
+		return errors.Wrap(err, "models: unable to upsert for companies")
 	}
 
 	var lastID int64
@@ -862,13 +909,13 @@ func (o *Supporter) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 	}
 
 	o.ID = int(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == supporterMapping["id"] {
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == companyMapping["id"] {
 		goto CacheNoHooks
 	}
 
-	uniqueMap, err = queries.BindMapping(supporterType, supporterMapping, nzUniques)
+	uniqueMap, err = queries.BindMapping(companyType, companyMapping, nzUniques)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to retrieve unique values for supporters")
+		return errors.Wrap(err, "models: unable to retrieve unique values for companies")
 	}
 	nzUniqueCols = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), uniqueMap)
 
@@ -879,32 +926,32 @@ func (o *Supporter) Upsert(ctx context.Context, exec boil.ContextExecutor, updat
 	}
 	err = exec.QueryRowContext(ctx, cache.retQuery, nzUniqueCols...).Scan(returns...)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to populate default values for supporters")
+		return errors.Wrap(err, "models: unable to populate default values for companies")
 	}
 
 CacheNoHooks:
 	if !cached {
-		supporterUpsertCacheMut.Lock()
-		supporterUpsertCache[key] = cache
-		supporterUpsertCacheMut.Unlock()
+		companyUpsertCacheMut.Lock()
+		companyUpsertCache[key] = cache
+		companyUpsertCacheMut.Unlock()
 	}
 
 	return o.doAfterUpsertHooks(ctx, exec)
 }
 
-// Delete deletes a single Supporter record with an executor.
+// Delete deletes a single Company record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Supporter) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Company) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if o == nil {
-		return 0, errors.New("models: no Supporter provided for delete")
+		return 0, errors.New("models: no Company provided for delete")
 	}
 
 	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
 		return 0, err
 	}
 
-	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), supporterPrimaryKeyMapping)
-	sql := "DELETE FROM `supporters` WHERE `id`=?"
+	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), companyPrimaryKeyMapping)
+	sql := "DELETE FROM `companies` WHERE `id`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -913,12 +960,12 @@ func (o *Supporter) Delete(ctx context.Context, exec boil.ContextExecutor) (int6
 	}
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete from supporters")
+		return 0, errors.Wrap(err, "models: unable to delete from companies")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for supporters")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for companies")
 	}
 
 	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
@@ -929,33 +976,33 @@ func (o *Supporter) Delete(ctx context.Context, exec boil.ContextExecutor) (int6
 }
 
 // DeleteAll deletes all matching rows.
-func (q supporterQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q companyQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if q.Query == nil {
-		return 0, errors.New("models: no supporterQuery provided for delete all")
+		return 0, errors.New("models: no companyQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete all from supporters")
+		return 0, errors.Wrap(err, "models: unable to delete all from companies")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for supporters")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for companies")
 	}
 
 	return rowsAff, nil
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o SupporterSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o CompanySlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
 
-	if len(supporterBeforeDeleteHooks) != 0 {
+	if len(companyBeforeDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
 				return 0, err
@@ -965,12 +1012,12 @@ func (o SupporterSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 
 	var args []interface{}
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), supporterPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), companyPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM `supporters` WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, supporterPrimaryKeyColumns, len(o))
+	sql := "DELETE FROM `companies` WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, companyPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -979,15 +1026,15 @@ func (o SupporterSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 	}
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete all from supporter slice")
+		return 0, errors.Wrap(err, "models: unable to delete all from company slice")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for supporters")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for companies")
 	}
 
-	if len(supporterAfterDeleteHooks) != 0 {
+	if len(companyAfterDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
 				return 0, err
@@ -1000,8 +1047,8 @@ func (o SupporterSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *Supporter) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindSupporter(ctx, exec, o.ID)
+func (o *Company) Reload(ctx context.Context, exec boil.ContextExecutor) error {
+	ret, err := FindCompany(ctx, exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1012,26 +1059,26 @@ func (o *Supporter) Reload(ctx context.Context, exec boil.ContextExecutor) error
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *SupporterSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
+func (o *CompanySlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
 
-	slice := SupporterSlice{}
+	slice := CompanySlice{}
 	var args []interface{}
 	for _, obj := range *o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), supporterPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), companyPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT `supporters`.* FROM `supporters` WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, supporterPrimaryKeyColumns, len(*o))
+	sql := "SELECT `companies`.* FROM `companies` WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 0, companyPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
 
 	err := q.Bind(ctx, exec, &slice)
 	if err != nil {
-		return errors.Wrap(err, "models: unable to reload all in SupporterSlice")
+		return errors.Wrap(err, "models: unable to reload all in CompanySlice")
 	}
 
 	*o = slice
@@ -1039,10 +1086,10 @@ func (o *SupporterSlice) ReloadAll(ctx context.Context, exec boil.ContextExecuto
 	return nil
 }
 
-// SupporterExists checks if the Supporter row exists.
-func SupporterExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
+// CompanyExists checks if the Company row exists.
+func CompanyExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `supporters` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `companies` where `id`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1053,34 +1100,34 @@ func SupporterExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bo
 
 	err := row.Scan(&exists)
 	if err != nil {
-		return false, errors.Wrap(err, "models: unable to check if supporters exists")
+		return false, errors.Wrap(err, "models: unable to check if companies exists")
 	}
 
 	return exists, nil
 }
 
-// Exists checks if the Supporter row exists.
-func (o *Supporter) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return SupporterExists(ctx, exec, o.ID)
+// Exists checks if the Company row exists.
+func (o *Company) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
+	return CompanyExists(ctx, exec, o.ID)
 }
 
 // /////////////////////////////// BEGIN EXTENSIONS /////////////////////////////////
 // Expose table columns
 var (
-	SupporterAllColumns            = supporterAllColumns
-	SupporterColumnsWithoutDefault = supporterColumnsWithoutDefault
-	SupporterColumnsWithDefault    = supporterColumnsWithDefault
-	SupporterPrimaryKeyColumns     = supporterPrimaryKeyColumns
-	SupporterGeneratedColumns      = supporterGeneratedColumns
+	CompanyAllColumns            = companyAllColumns
+	CompanyColumnsWithoutDefault = companyColumnsWithoutDefault
+	CompanyColumnsWithDefault    = companyColumnsWithDefault
+	CompanyPrimaryKeyColumns     = companyPrimaryKeyColumns
+	CompanyGeneratedColumns      = companyGeneratedColumns
 )
 
 // GetID get ID from model object
-func (o *Supporter) GetID() int {
+func (o *Company) GetID() int {
 	return o.ID
 }
 
 // GetIDs extract IDs from model objects
-func (s SupporterSlice) GetIDs() []int {
+func (s CompanySlice) GetIDs() []int {
 	result := make([]int, len(s))
 	for i := range s {
 		result[i] = s[i].ID
@@ -1089,7 +1136,7 @@ func (s SupporterSlice) GetIDs() []int {
 }
 
 // GetIntfIDs extract IDs from model objects as interface slice
-func (s SupporterSlice) GetIntfIDs() []interface{} {
+func (s CompanySlice) GetIntfIDs() []interface{} {
 	result := make([]interface{}, len(s))
 	for i := range s {
 		result[i] = s[i].ID
@@ -1098,8 +1145,8 @@ func (s SupporterSlice) GetIntfIDs() []interface{} {
 }
 
 // ToIDMap convert a slice of model objects to a map with ID as key
-func (s SupporterSlice) ToIDMap() map[int]*Supporter {
-	result := make(map[int]*Supporter, len(s))
+func (s CompanySlice) ToIDMap() map[int]*Company {
+	result := make(map[int]*Company, len(s))
 	for _, o := range s {
 		result[o.ID] = o
 	}
@@ -1107,8 +1154,8 @@ func (s SupporterSlice) ToIDMap() map[int]*Supporter {
 }
 
 // ToUniqueItems construct a slice of unique items from the given slice
-func (s SupporterSlice) ToUniqueItems() SupporterSlice {
-	result := make(SupporterSlice, 0, len(s))
+func (s CompanySlice) ToUniqueItems() CompanySlice {
+	result := make(CompanySlice, 0, len(s))
 	mapChk := make(map[int]struct{}, len(s))
 	for i := len(s) - 1; i >= 0; i-- {
 		o := s[i]
@@ -1121,7 +1168,7 @@ func (s SupporterSlice) ToUniqueItems() SupporterSlice {
 }
 
 // FindItemByID find item by ID in the slice
-func (s SupporterSlice) FindItemByID(id int) *Supporter {
+func (s CompanySlice) FindItemByID(id int) *Company {
 	for _, o := range s {
 		if o.ID == id {
 			return o
@@ -1132,7 +1179,7 @@ func (s SupporterSlice) FindItemByID(id int) *Supporter {
 
 // FindMissingItemIDs find all item IDs that are not in the list
 // NOTE: the input ID slice should contain unique values
-func (s SupporterSlice) FindMissingItemIDs(expectedIDs []int) []int {
+func (s CompanySlice) FindMissingItemIDs(expectedIDs []int) []int {
 	if len(s) == 0 {
 		return expectedIDs
 	}
@@ -1148,7 +1195,7 @@ func (s SupporterSlice) FindMissingItemIDs(expectedIDs []int) []int {
 
 // InsertAll inserts all rows with the specified column values, using an executor.
 // IMPORTANT: this will calculate the widest columns from all items in the slice, be careful if you want to use default column values
-func (o SupporterSlice) InsertAll(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o CompanySlice) InsertAll(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1157,17 +1204,17 @@ func (o SupporterSlice) InsertAll(ctx context.Context, exec boil.ContextExecutor
 	wlCols := make(map[string]struct{}, 10)
 	for _, row := range o {
 		wl, _ := columns.InsertColumnSet(
-			supporterAllColumns,
-			supporterColumnsWithDefault,
-			supporterColumnsWithoutDefault,
-			queries.NonZeroDefaultSet(supporterColumnsWithDefault, row),
+			companyAllColumns,
+			companyColumnsWithDefault,
+			companyColumnsWithoutDefault,
+			queries.NonZeroDefaultSet(companyColumnsWithDefault, row),
 		)
 		for _, col := range wl {
 			wlCols[col] = struct{}{}
 		}
 	}
 	wl := make([]string, 0, len(wlCols))
-	for _, col := range supporterAllColumns {
+	for _, col := range companyAllColumns {
 		if _, ok := wlCols[col]; ok {
 			wl = append(wl, col)
 		}
@@ -1191,13 +1238,13 @@ func (o SupporterSlice) InsertAll(ctx context.Context, exec boil.ContextExecutor
 		}
 
 		if i == 0 {
-			sql = "INSERT INTO `supporters` " + "(`" + strings.Join(wl, "`,`") + "`)" + " VALUES "
+			sql = "INSERT INTO `companies` " + "(`" + strings.Join(wl, "`,`") + "`)" + " VALUES "
 		}
 		sql += strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), len(vals)+1, len(wl))
 		if i != len(o)-1 {
 			sql += ","
 		}
-		valMapping, err := queries.BindMapping(supporterType, supporterMapping, wl)
+		valMapping, err := queries.BindMapping(companyType, companyMapping, wl)
 		if err != nil {
 			return 0, err
 		}
@@ -1214,15 +1261,15 @@ func (o SupporterSlice) InsertAll(ctx context.Context, exec boil.ContextExecutor
 
 	result, err := exec.ExecContext(ctx, sql, vals...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to insert all from supporter slice")
+		return 0, errors.Wrap(err, "models: unable to insert all from company slice")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by insertall for supporters")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by insertall for companies")
 	}
 
-	if len(supporterAfterInsertHooks) != 0 {
+	if len(companyAfterInsertHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterInsertHooks(ctx, exec); err != nil {
 				return 0, err
@@ -1235,14 +1282,14 @@ func (o SupporterSlice) InsertAll(ctx context.Context, exec boil.ContextExecutor
 
 // InsertIgnoreAll inserts all rows with ignoring the existing ones having the same primary key values.
 // IMPORTANT: this will calculate the widest columns from all items in the slice, be careful if you want to use default column values
-func (o SupporterSlice) InsertIgnoreAll(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+func (o CompanySlice) InsertIgnoreAll(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
 	return o.UpsertAll(ctx, exec, boil.None(), columns)
 }
 
 // UpsertAll inserts or updates all rows
 // Currently it doesn't support "NoContext" and "NoRowsAffected"
 // IMPORTANT: this will calculate the widest columns from all items in the slice, be careful if you want to use default column values
-func (o SupporterSlice) UpsertAll(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) (int64, error) {
+func (o CompanySlice) UpsertAll(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1250,33 +1297,33 @@ func (o SupporterSlice) UpsertAll(ctx context.Context, exec boil.ContextExecutor
 	// Calculate the widest columns from all rows need to upsert
 	insertCols := make(map[string]struct{}, 10)
 	for _, row := range o {
-		nzUniques := queries.NonZeroDefaultSet(mySQLSupporterUniqueColumns, row)
+		nzUniques := queries.NonZeroDefaultSet(mySQLCompanyUniqueColumns, row)
 		if len(nzUniques) == 0 {
 			return 0, errors.New("cannot upsert with a table that cannot conflict on a unique column")
 		}
 		insert, _ := insertColumns.InsertColumnSet(
-			supporterAllColumns,
-			supporterColumnsWithDefault,
-			supporterColumnsWithoutDefault,
-			queries.NonZeroDefaultSet(supporterColumnsWithDefault, row),
+			companyAllColumns,
+			companyColumnsWithDefault,
+			companyColumnsWithoutDefault,
+			queries.NonZeroDefaultSet(companyColumnsWithDefault, row),
 		)
 		for _, col := range insert {
 			insertCols[col] = struct{}{}
 		}
 	}
 	insert := make([]string, 0, len(insertCols))
-	for _, col := range supporterAllColumns {
+	for _, col := range companyAllColumns {
 		if _, ok := insertCols[col]; ok {
 			insert = append(insert, col)
 		}
 	}
 
 	update := updateColumns.UpdateColumnSet(
-		supporterAllColumns,
-		supporterPrimaryKeyColumns,
+		companyAllColumns,
+		companyPrimaryKeyColumns,
 	)
 	if !updateColumns.IsNone() && len(update) == 0 {
-		return 0, errors.New("models: unable to upsert supporters, could not build update column list")
+		return 0, errors.New("models: unable to upsert companies, could not build update column list")
 	}
 
 	buf := strmangle.GetBuffer()
@@ -1285,14 +1332,14 @@ func (o SupporterSlice) UpsertAll(ctx context.Context, exec boil.ContextExecutor
 	if len(update) == 0 {
 		fmt.Fprintf(
 			buf,
-			"INSERT IGNORE INTO `supporters`(%s) VALUES %s",
+			"INSERT IGNORE INTO `companies`(%s) VALUES %s",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, insert), ","),
 			strmangle.Placeholders(false, len(insert)*len(o), 1, len(insert)),
 		)
 	} else {
 		fmt.Fprintf(
 			buf,
-			"INSERT INTO `supporters`(%s) VALUES %s ON DUPLICATE KEY UPDATE ",
+			"INSERT INTO `companies`(%s) VALUES %s ON DUPLICATE KEY UPDATE ",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, insert), ","),
 			strmangle.Placeholders(false, len(insert)*len(o), 1, len(insert)),
 		)
@@ -1310,7 +1357,7 @@ func (o SupporterSlice) UpsertAll(ctx context.Context, exec boil.ContextExecutor
 	}
 
 	query := buf.String()
-	valueMapping, err := queries.BindMapping(supporterType, supporterMapping, insert)
+	valueMapping, err := queries.BindMapping(companyType, companyMapping, insert)
 	if err != nil {
 		return 0, err
 	}
@@ -1342,15 +1389,15 @@ func (o SupporterSlice) UpsertAll(ctx context.Context, exec boil.ContextExecutor
 
 	result, err := exec.ExecContext(ctx, query, vals...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to upsert for supporters")
+		return 0, errors.Wrap(err, "models: unable to upsert for companies")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by upsert for supporters")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by upsert for companies")
 	}
 
-	if len(supporterAfterUpsertHooks) != 0 {
+	if len(companyAfterUpsertHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterUpsertHooks(ctx, exec); err != nil {
 				return 0, err
@@ -1361,10 +1408,10 @@ func (o SupporterSlice) UpsertAll(ctx context.Context, exec boil.ContextExecutor
 	return rowsAff, nil
 }
 
-// DeleteAllByPage delete all Supporter records from the slice.
+// DeleteAllByPage delete all Company records from the slice.
 // This function deletes data by pages to avoid exceeding Mysql limitation (max placeholders: 65535)
 // Mysql Error 1390: Prepared statement contains too many placeholders.
-func (s SupporterSlice) DeleteAllByPage(ctx context.Context, exec boil.ContextExecutor, limits ...int) (int64, error) {
+func (s CompanySlice) DeleteAllByPage(ctx context.Context, exec boil.ContextExecutor, limits ...int) (int64, error) {
 	length := len(s)
 	if length == 0 {
 		return 0, nil
@@ -1400,10 +1447,10 @@ func (s SupporterSlice) DeleteAllByPage(ctx context.Context, exec boil.ContextEx
 	return rowsAffected, nil
 }
 
-// UpdateAllByPage update all Supporter records from the slice.
+// UpdateAllByPage update all Company records from the slice.
 // This function updates data by pages to avoid exceeding Mysql limitation (max placeholders: 65535)
 // Mysql Error 1390: Prepared statement contains too many placeholders.
-func (s SupporterSlice) UpdateAllByPage(ctx context.Context, exec boil.ContextExecutor, cols M, limits ...int) (int64, error) {
+func (s CompanySlice) UpdateAllByPage(ctx context.Context, exec boil.ContextExecutor, cols M, limits ...int) (int64, error) {
 	length := len(s)
 	if length == 0 {
 		return 0, nil
@@ -1440,17 +1487,17 @@ func (s SupporterSlice) UpdateAllByPage(ctx context.Context, exec boil.ContextEx
 	return rowsAffected, nil
 }
 
-// InsertAllByPage insert all Supporter records from the slice.
+// InsertAllByPage insert all Company records from the slice.
 // This function inserts data by pages to avoid exceeding Mysql limitation (max placeholders: 65535)
 // Mysql Error 1390: Prepared statement contains too many placeholders.
-func (s SupporterSlice) InsertAllByPage(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns, limits ...int) (int64, error) {
+func (s CompanySlice) InsertAllByPage(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns, limits ...int) (int64, error) {
 	length := len(s)
 	if length == 0 {
 		return 0, nil
 	}
 
 	// MySQL max placeholders = 65535
-	chunkSize := MaxPageSize / reflect.ValueOf(&SupporterColumns).Elem().NumField()
+	chunkSize := MaxPageSize / reflect.ValueOf(&CompanyColumns).Elem().NumField()
 	if len(limits) > 0 && limits[0] > 0 && limits[0] < chunkSize {
 		chunkSize = limits[0]
 	}
@@ -1479,16 +1526,16 @@ func (s SupporterSlice) InsertAllByPage(ctx context.Context, exec boil.ContextEx
 	return rowsAffected, nil
 }
 
-// InsertIgnoreAllByPage insert all Supporter records from the slice.
+// InsertIgnoreAllByPage insert all Company records from the slice.
 // This function inserts data by pages to avoid exceeding Postgres limitation (max parameters: 65535)
-func (s SupporterSlice) InsertIgnoreAllByPage(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns, limits ...int) (int64, error) {
+func (s CompanySlice) InsertIgnoreAllByPage(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns, limits ...int) (int64, error) {
 	length := len(s)
 	if length == 0 {
 		return 0, nil
 	}
 
 	// max number of parameters = 65535
-	chunkSize := MaxPageSize / reflect.ValueOf(&SupporterColumns).Elem().NumField()
+	chunkSize := MaxPageSize / reflect.ValueOf(&CompanyColumns).Elem().NumField()
 	if len(limits) > 0 && limits[0] > 0 && limits[0] < chunkSize {
 		chunkSize = limits[0]
 	}
@@ -1517,17 +1564,17 @@ func (s SupporterSlice) InsertIgnoreAllByPage(ctx context.Context, exec boil.Con
 	return rowsAffected, nil
 }
 
-// UpsertAllByPage upsert all Supporter records from the slice.
+// UpsertAllByPage upsert all Company records from the slice.
 // This function upserts data by pages to avoid exceeding Mysql limitation (max placeholders: 65535)
 // Mysql Error 1390: Prepared statement contains too many placeholders.
-func (s SupporterSlice) UpsertAllByPage(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns, limits ...int) (int64, error) {
+func (s CompanySlice) UpsertAllByPage(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns, limits ...int) (int64, error) {
 	length := len(s)
 	if length == 0 {
 		return 0, nil
 	}
 
 	// MySQL max placeholders = 65535
-	chunkSize := MaxPageSize / reflect.ValueOf(&SupporterColumns).Elem().NumField()
+	chunkSize := MaxPageSize / reflect.ValueOf(&CompanyColumns).Elem().NumField()
 	if len(limits) > 0 && limits[0] > 0 && limits[0] < chunkSize {
 		chunkSize = limits[0]
 	}
