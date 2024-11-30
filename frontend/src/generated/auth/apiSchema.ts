@@ -46,6 +46,7 @@ export interface components {
       lastName?: string[];
       email?: string[];
       password?: string[];
+      birthday?: string[];
       frontIdentification?: string[];
       backIdentification?: string[];
     };
@@ -87,6 +88,8 @@ export interface components {
           lastName: string;
           email: string;
           password: string;
+          /** Format: date */
+          birthday?: string;
           /** Format: binary */
           frontIdentification?: Blob;
           /** Format: binary */

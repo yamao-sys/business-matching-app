@@ -10,6 +10,7 @@ import { BoxInputForm } from '@/components/molucules/BoxInputForm';
 import { ImageSelector } from '@/components/molucules/ImageSelector';
 import { postValidateSignUp } from '@/apis/authApi';
 import { components } from '@/generated/auth/apiSchema';
+import { BoxDatePicker } from '@/components/molucules/BoxDatePicker';
 
 type Props = {
   togglePhase: (newPhase: PhaseType) => void;
@@ -23,9 +24,9 @@ const INITIAL_VALIDATION_ERRORS = {
   lastName: [],
   email: [],
   password: [],
+  birthday: [],
   frontIdentification: [],
   backIdentification: [],
-  skills: [],
 };
 
 export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
@@ -121,6 +122,16 @@ export const SignUpInput: FC<Props> = ({ togglePhase }: Props) => {
           value={supporterSignUpInput.password}
           onChange={setSupporterSignUpTextInput}
           validationErrorMessages={validationErrors.password ?? []}
+          needsMargin={true}
+        />
+
+        <BoxDatePicker
+          labelId='birthday'
+          labelText='生年月日'
+          name='birthday'
+          value={supporterSignUpInput.birthday ?? ''}
+          onChange={setSupporterSignUpTextInput}
+          validationErrorMessages={validationErrors.birthday ?? []}
           needsMargin={true}
         />
 
