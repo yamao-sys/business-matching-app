@@ -10,6 +10,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -109,6 +110,18 @@ func (authController *authController) mappingInputStruct(reader *multipart.Reade
 			inputStruct.Password = buf.String()
 		case "email":
 			inputStruct.Email = buf.String()
+		case "birthday":
+			birthday := buf.String()
+			if birthday == "" {
+				continue
+			}
+			
+			parsedTime, parseErr := time.Parse("2006-01-02", birthday)
+			if parseErr != nil {
+				fmt.Println(parseErr)
+				return inputStruct, fmt.Errorf("failed to parse birthday: %w", parseErr)
+			}
+			inputStruct.Birthday = &openapi_types.Date{Time: parsedTime}
 		case "frontIdentification":
 			var frontIdentification openapi_types.File
 			frontIdentification.InitFromBytes(buf.Bytes(), filename)

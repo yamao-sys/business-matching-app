@@ -57,6 +57,7 @@ describe('pages/auth/sign_up/components/SignUpForm', () => {
       await user.type(screen.getByLabelText('名'), 'type_first_name');
       await user.type(screen.getByLabelText('Email'), 'type@example.com');
       await user.type(screen.getByLabelText('パスワード'), 'type_password');
+      await user.type(screen.getByLabelText('生年月日'), '1992-07-07');
       await user.upload(screen.getByTestId('front-identification'), inputFile);
       await user.upload(screen.getByTestId('back-identification'), inputFile);
 
@@ -68,11 +69,13 @@ describe('pages/auth/sign_up/components/SignUpForm', () => {
 
       // NOTE: 入力内容を変更し、確認画面へ遷移できること
       await user.type(screen.getByLabelText('姓'), '_edited');
+      await user.clear(screen.getByLabelText('生年月日'));
       await user.click(screen.getByRole('button', { name: '確認画面へ' }));
       expect(screen.getByText('登録情報の確認')).toHaveClass('text-blue-300');
       expect(screen.getByText('type_last_name_edited type_first_name')).toBeInTheDocument();
       expect(screen.getByText('type@example.com')).toBeInTheDocument();
       expect(screen.getByText('*************')).toBeInTheDocument();
+      expect(screen.getByText('-')).toBeInTheDocument(); // NOTE: 生年月日は空値の時は「-」
       expect(screen.getByAltText('アップロード画像_身分証明書(表)')).toBeInTheDocument();
       expect(screen.getByAltText('アップロード画像_身分証明書(裏)')).toBeInTheDocument();
     });
@@ -85,6 +88,7 @@ describe('pages/auth/sign_up/components/SignUpForm', () => {
       await user.type(screen.getByLabelText('名'), 'type_first_name');
       await user.type(screen.getByLabelText('Email'), 'type@example.com');
       await user.type(screen.getByLabelText('パスワード'), 'type_password');
+      await user.type(screen.getByLabelText('生年月日'), '1992-07-07');
       await user.upload(screen.getByTestId('front-identification'), inputFile);
       await user.upload(screen.getByTestId('back-identification'), inputFile);
 

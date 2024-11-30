@@ -38,6 +38,10 @@ describe('pages/auth/sign_up/components/SignUpInput', () => {
     expect(screen.getByLabelText('名')).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('パスワード')).toBeInTheDocument();
+    expect(screen.getByLabelText('生年月日')).toBeInTheDocument();
+    // NOTE: 画像部はlabel内にフォームを含むためgetByLabelTextで取得できず → getByText
+    expect(screen.getByText('身分証明書(表)')).toBeInTheDocument();
+    expect(screen.getByText('身分証明書(裏)')).toBeInTheDocument();
 
     expect(screen.getByRole('button', { name: '確認画面へ' })).toBeInTheDocument();
   });
@@ -61,6 +65,9 @@ describe('pages/auth/sign_up/components/SignUpInput', () => {
 
     await user.type(screen.getByLabelText('パスワード'), 'type_password');
     expect(screen.getByLabelText('パスワード')).toHaveValue('type_password');
+
+    await user.type(screen.getByLabelText('生年月日'), '1992-07-07');
+    expect(screen.getByLabelText('生年月日')).toHaveValue('1992-07-07');
 
     await user.upload(screen.getByTestId('front-identification'), inputFile);
     expect(screen.getByAltText('アップロード画像_身分証明書(表)')).toBeInTheDocument();

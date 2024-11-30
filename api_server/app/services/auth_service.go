@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/crypto/bcrypt"
 
@@ -41,6 +42,9 @@ func (as *authService) SignUp(ctx context.Context, requestParams auth.PostAuthSi
 	supporter.FirstName = requestParams.FirstName
 	supporter.LastName = requestParams.LastName
 	supporter.Email = requestParams.Email
+	if requestParams.Birthday != nil {
+		supporter.Birthday = null.Time{Time: requestParams.Birthday.Time, Valid: true}
+	}
 	supporter.FrontIdentification = ""
 	supporter.BackIdentification = ""
 

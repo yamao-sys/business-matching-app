@@ -70,6 +70,10 @@ export const SignUpConfirmation: FC<Props> = ({ togglePhase }: Props) => {
           </div>
         </div>
         <div className='flex w-full justify-around mt-8'>
+          <div className='w-1/2 align-middle'>生年月日: </div>
+          <div className='w-1/2 align-middle'>{supporterSignUpInput.birthday || '-'}</div>
+        </div>
+        <div className='flex w-full justify-around mt-8'>
           <div className='w-1/2 align-middle'>身分証明書(表): </div>
           <div className='w-1/2 align-middle'>
             <div

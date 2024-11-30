@@ -59,6 +59,10 @@ components:
           type: array
           items:
             type: string
+        birthday:
+          type: array
+          items:
+            type: string
         frontIdentification:
           type: array
           items:
@@ -87,6 +91,9 @@ components:
                 type: string
               password:
                 type: string
+              birthday:
+                type: string
+                format: date
               frontIdentification:
                 type: string
                 format: binary

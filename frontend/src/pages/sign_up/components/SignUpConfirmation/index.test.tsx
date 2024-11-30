@@ -13,6 +13,7 @@ const useSupporterSignUpStateContext = vi.hoisted(() =>
       firstName: 'test_first_name',
       email: 'test@example.com',
       password: 'Passwor1',
+      birthday: '1992-07-07',
     },
   })),
 );
@@ -50,6 +51,7 @@ describe('pages/auth/sign_up/components/SignUpConfirmation', () => {
     expect(screen.getByText('test_last_name test_first_name')).toBeInTheDocument();
     expect(screen.getByText('test@example.com')).toBeInTheDocument();
     expect(screen.getByText('********')).toBeInTheDocument();
+    expect(screen.getByText('1992-07-07')).toBeInTheDocument();
   });
 
   test('戻るボタンを押下すると、フォーム画面に戻るアクションが実行されること', async () => {

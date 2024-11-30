@@ -4,6 +4,7 @@ import (
 	"app/controllers"
 	"app/db"
 	"app/generated/auth"
+	"app/generated/specialities"
 	"app/services"
 	"net/http"
 	"os"
@@ -22,6 +23,9 @@ func main() {
 	server := controllers.NewAuthController(authService)
 	strictHandler := auth.NewStrictHandler(server, nil)
 
+	specialitiesServer := controllers.NewSpecialitiesController()
+	specialitiesStrictHandler := specialities.NewStrictHandler(specialitiesServer, nil)
+
 	// NOTE: Handlerをルーティングに追加
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -29,6 +33,7 @@ func main() {
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 	}))
 	auth.RegisterHandlers(e, strictHandler)
+	specialities.RegisterHandlers(e, specialitiesStrictHandler)
 
 	e.Logger.Fatal(e.Start(":" + os.Getenv("SERVER_PORT")))
 }

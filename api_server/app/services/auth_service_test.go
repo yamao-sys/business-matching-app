@@ -6,10 +6,12 @@ import (
 	"bytes"
 	"strconv"
 	"testing"
+	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -107,11 +109,13 @@ func (s *TestAuthServiceSuite) TestValidateSignUp_ValidationErrorWithOptionalFie
 	var identificationFile openapi_types.File
 	identificationFile.InitFromBytes(gifBuf.Bytes(), "frontIdentificationFile.gif")
 
+	parsedTime, _ := time.Parse("2006-01-02", "1992-07-07")
 	requestParams := auth.PostAuthValidateSignUpMultipartRequestBody{
 		FirstName: "first_name",
 		LastName: "last_name",
 		Email: "test@example.com",
 		Password: "Password",
+		Birthday: &openapi_types.Date{Time: parsedTime},
 		FrontIdentification: &identificationFile,
 		BackIdentification: &identificationFile,
 	}
@@ -145,13 +149,16 @@ func (s *TestAuthServiceSuite) TestSignUp_SuccessRequiredFields() {
 	assert.Nil(s.T(), result)
 
 	// NOTE: Supporterが作成されていることを確認
-	isExistSupporter, err := models.Supporters(
+	supporter, err := models.Supporters(
 		qm.Where("email = ?", "test@example.com"),
-	).Exists(ctx, DBCon)
+	).One(ctx, DBCon)
 	if err != nil {
 		s.T().Fatalf("failed to create supporter %v", err)
 	}
-	assert.True(s.T(), isExistSupporter)
+	// NOTE: Birthdayはnullとなっている
+	assert.Equal(s.T(), null.Time{}, supporter.Birthday)
+	assert.Equal(s.T(), "", supporter.FrontIdentification)
+	assert.Equal(s.T(), "", supporter.BackIdentification)
 }
 
 func (s *TestAuthServiceSuite) TestSignUp_SuccessWithOptionalFields() {
@@ -165,12 +172,14 @@ func (s *TestAuthServiceSuite) TestSignUp_SuccessWithOptionalFields() {
 	var frontIdentificationFile, backIdentificationFile openapi_types.File
 	frontIdentificationFile.InitFromBytes(pngBuf.Bytes(), "frontIdentificationFile.png")
 	backIdentificationFile.InitFromBytes(jpgBuf.Bytes(), "backIdentificationFile.jpg")
+	parsedTime, _ := time.Parse("2006-01-02", "1992-07-07")
 
 	requestParams := auth.PostAuthSignUpMultipartRequestBody{
 		FirstName: "first_name",
 		LastName: "last_name",
 		Email: "test@example.com",
 		Password: "Password",
+		Birthday: &openapi_types.Date{Time: parsedTime},
 		FrontIdentification: &frontIdentificationFile,
 		BackIdentification: &backIdentificationFile,
 	}
@@ -187,6 +196,7 @@ func (s *TestAuthServiceSuite) TestSignUp_SuccessWithOptionalFields() {
 		s.T().Fatalf("failed to create supporter %v", err)
 	}
 	id := strconv.Itoa(supporter.ID)
+	assert.Equal(s.T(), "1992-07-07", supporter.Birthday.Time.Format("2006-01-02"))
 	assert.Equal(s.T(), "supporters/"+id+"/frontIdentificationFile.png", supporter.FrontIdentification)
 	assert.Equal(s.T(), "supporters/"+id+"/backIdentificationFile.jpg", supporter.BackIdentification)
 }
