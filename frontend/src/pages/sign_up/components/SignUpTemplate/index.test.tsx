@@ -36,6 +36,9 @@ describe('pages/auth/sign_up/components/SignUpTemplate', () => {
     await user.type(screen.getByLabelText('パスワード'), 'type_password');
     expect(screen.getByLabelText('パスワード')).toHaveValue('type_password');
 
+    await user.type(screen.getByLabelText('生年月日'), '1992-07-07');
+    expect(screen.getByLabelText('生年月日')).toHaveValue('1992-07-07');
+
     await user.upload(screen.getByTestId('front-identification'), inputFile);
     expect(screen.getByAltText('アップロード画像_身分証明書(表)')).toBeInTheDocument();
 
@@ -70,6 +73,7 @@ describe('pages/auth/sign_up/components/SignUpTemplate', () => {
     await user.type(screen.getByLabelText('名'), 'type_first_name');
     await user.type(screen.getByLabelText('Email'), 'type@example.com');
     await user.type(screen.getByLabelText('パスワード'), 'type_password');
+    await user.type(screen.getByLabelText('生年月日'), '1992-07-07');
     await user.upload(screen.getByTestId('front-identification'), inputFile);
     await user.upload(screen.getByTestId('back-identification'), inputFile);
 
@@ -81,6 +85,7 @@ describe('pages/auth/sign_up/components/SignUpTemplate', () => {
     expect(screen.getByText('type_last_name type_first_name')).toBeInTheDocument();
     expect(screen.getByText('type@example.com')).toBeInTheDocument();
     expect(screen.getByText('*************')).toBeInTheDocument();
+    expect(screen.getByText('1992-07-07')).toBeInTheDocument();
     expect(screen.getByAltText('アップロード画像_身分証明書(表)')).toBeInTheDocument();
     expect(screen.getByAltText('アップロード画像_身分証明書(裏)')).toBeInTheDocument();
   });
@@ -113,6 +118,7 @@ describe('pages/auth/sign_up/components/SignUpTemplate', () => {
     await user.type(screen.getByLabelText('名'), 'type_first_name');
     await user.type(screen.getByLabelText('Email'), 'type@example.com');
     await user.type(screen.getByLabelText('パスワード'), 'type_password');
+    await user.type(screen.getByLabelText('生年月日'), '1992-07-07');
     await user.upload(screen.getByTestId('front-identification'), inputFile);
     await user.upload(screen.getByTestId('back-identification'), inputFile);
 
@@ -125,6 +131,7 @@ describe('pages/auth/sign_up/components/SignUpTemplate', () => {
     expect(screen.getByLabelText('名')).toHaveValue('type_first_name');
     expect(screen.getByLabelText('Email')).toHaveValue('type@example.com');
     expect(screen.getByLabelText('パスワード')).toHaveValue('type_password');
+    expect(screen.getByLabelText('生年月日')).toHaveValue('1992-07-07');
     expect(screen.getByAltText('アップロード画像_身分証明書(表)')).toBeInTheDocument();
     expect(screen.getByAltText('アップロード画像_身分証明書(裏)')).toBeInTheDocument();
   });
