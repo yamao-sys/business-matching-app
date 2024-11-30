@@ -1,0 +1,45 @@
+openapi: 3.1.0
+info:
+  title: business-matching-app
+  version: '1.0'
+  summary: ''
+  description: Business Matching App APIs
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  /specialities:
+    get:
+      summary: fetch specialities
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - specialities
+                properties:
+                  specialities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Speciality'
+      operationId: get-specialities
+components:
+  schemas:
+    Speciality:
+      title: Speciality
+      type: object
+      required:
+        - name
+        - displayName
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+      description: Speciality Model
+tags:
+  - name: business matching app
+    description: business matching app
