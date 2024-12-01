@@ -21,8 +21,6 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/CompanySignUpInput'
       description: validate sign up
-      tags:
-        - auth
   /companies/signUp:
     post:
       summary: Company SignUp
@@ -37,6 +35,20 @@ paths:
       operationId: post-auth-sign_up
       requestBody:
         $ref: '#/components/requestBodies/CompanySignUpInput'
+  /companies/signIn:
+    post:
+      summary: Company Sign In
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CompanySignInOkResponse'
+        '400':
+          $ref: '#/components/responses/CompanySignInBadRequestResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+      operationId: post-auth-sign_in
+      requestBody:
+        $ref: '#/components/requestBodies/CompanySignInInput'
 components:
   schemas:
     CompanySignUpValidationError:
@@ -80,6 +92,20 @@ components:
               password:
                 type: string
       description: SignUp Company Iuput
+    CompanySignInInput:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      description: SignIn Company Input
   responses:
     CompanySignUpResponse:
       description: ''
@@ -97,6 +123,29 @@ components:
               errors:
                 type: object
                 $ref: '#/components/schemas/CompanySignUpValidationError'
+    CompanySignInOkResponse:
+      description: Company SignIn Response
+      content:
+        application/json:
+          schema:
+            type: object
+      headers:
+        Set-Cookie:
+          schema:
+            type: string
+    CompanySignInBadRequestResponse:
+      description: Company SignIn BadRequest Response
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - errors
+            properties:
+              errors:
+                type: array
+                items:
+                  type: string
     InternalServerErrorResponse:
       description: Internal Server Error Response
       content:

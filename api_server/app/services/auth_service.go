@@ -6,12 +6,17 @@ import (
 	"app/validator"
 	"context"
 	"database/sql"
+	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/crypto/bcrypt"
 
 	"cloud.google.com/go/storage"
@@ -20,7 +25,7 @@ import (
 type AuthService interface {
 	ValidateSignUp(ctx context.Context, request *auth.PostAuthValidateSignUpMultipartRequestBody) error
 	SignUp(ctx context.Context, requestParams auth.PostAuthSignUpMultipartRequestBody) error
-	// SignIn(ctx context.Context, requestParams dto.SignInRequest) *dto.SignInResponse
+	SignIn(ctx context.Context, requestParams auth.PostAuthSignInJSONBody) (statusCode int64, tokenString string, error error)
 	// GetAuthUser(ctx echo.Context) (*models.User, error)
 	// Getuser(ctx context.Context, id int) *models.User
 }
@@ -96,28 +101,29 @@ func (as *authService) SignUp(ctx context.Context, requestParams auth.PostAuthSi
 	return updateIdenfiticationErr
 }
 
-// // func (as *authService) SignIn(ctx context.Context, requestParams dto.SignInRequest) *dto.SignInResponse {
-// // 	// NOTE: emailからユーザの取得
-// // 	user, err := models.Users(qm.Where("email = ?", requestParams.Email)).One(ctx, as.db)
-// // 	if err != nil {
-// // 		return &dto.SignInResponse{TokenString: "", NotFoundMessage: "メールアドレスまたはパスワードに該当するユーザが存在しません。", Error: nil}
-// // 	}
+func (as *authService) SignIn(ctx context.Context, requestParams auth.PostAuthSignInJSONBody) (statusCode int64, tokenString string, error error) {
+	// NOTE: emailからSupporterの取得
+	user, err := models.Supporters(qm.Where("email = ?", requestParams.Email)).One(ctx, as.db)
+	if err != nil {
+		return http.StatusBadRequest, "", fmt.Errorf("メールアドレスまたはパスワードに該当する%sが存在しません。", "エンジニア")
+	}
 
-// // 	// NOTE: パスワードの照合
-// // 	if err := as.compareHashPassword(user.Password, requestParams.Password); err != nil {
-// // 		return &dto.SignInResponse{TokenString: "", NotFoundMessage: "メールアドレスまたはパスワードに該当するユーザが存在しません。", Error: nil}
-// // 	}
-// // 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-// // 		"user_id": user.ID,
-// // 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-// // 	})
-// // 	// TODO: JWT_SECRETを環境変数に切り出す
-// // 	tokenString, err := token.SignedString([]byte("abcdefghijklmn"))
-// // 	if err != nil {
-// // 		return &dto.SignInResponse{TokenString: "", NotFoundMessage: "", Error: err}
-// // 	}
-// // 	return &dto.SignInResponse{TokenString: tokenString, NotFoundMessage: "", Error: nil}
-// // }
+	// NOTE: パスワードの照合
+	if err := as.compareHashPassword(user.Password, requestParams.Password); err != nil {
+		return http.StatusBadRequest, "", fmt.Errorf("メールアドレスまたはパスワードに該当する%sが存在しません。", "エンジニア")
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"auth_type": "supporter",
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	})
+	// TODO: JWT_SECRETを環境変数に切り出す
+	tokenString, err = token.SignedString([]byte("abcdefghijklmn"))
+	if err != nil {
+		return http.StatusInternalServerError, "", err
+	}
+	return http.StatusOK, tokenString, nil
+}
 
 // // func (as *authService) GetAuthUser(ctx echo.Context) (*models.User, error) {
 // // 	// NOTE: Cookieからtokenを取得
@@ -162,13 +168,13 @@ func (as *authService) encryptPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-// // // NOTE: パスワードの照合
-// // func (as *authService) compareHashPassword(hashedPassword, requestPassword string) error {
-// // 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(requestPassword)); err != nil {
-// // 		return err
-// // 	}
-// // 	return nil
-// // }
+// NOTE: パスワードの照合
+func (as *authService) compareHashPassword(hashedPassword, requestPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(requestPassword)); err != nil {
+		return err
+	}
+	return nil
+}
 
 func (as *authService) uploadIdentification(bucket *storage.BucketHandle, path string, reader io.Reader) error {
 	obj := bucket.Object(path)

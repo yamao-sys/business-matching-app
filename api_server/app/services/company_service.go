@@ -6,15 +6,20 @@ import (
 	"app/validator"
 	"context"
 	"database/sql"
+	"fmt"
+	"net/http"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type CompanyService interface {
 	ValidateSignUp(ctx context.Context, request *companies.CompanySignUpInput) error
 	SignUp(ctx context.Context, requestParams companies.CompanySignUpInput) error
-	// SignIn(ctx context.Context, requestParams dto.SignInRequest) *dto.SignInResponse
+	SignIn(ctx context.Context, requestParams companies.CompanySignInInput) (statusCode int64, tokenString string, error error)
 	// GetAuthUser(ctx echo.Context) (*models.User, error)
 	// Getuser(ctx context.Context, id int) *models.User
 }
@@ -51,28 +56,29 @@ func (cs *companyService) SignUp(ctx context.Context, requestParams companies.Co
 	return nil
 }
 
-// // func (as *authService) SignIn(ctx context.Context, requestParams dto.SignInRequest) *dto.SignInResponse {
-// // 	// NOTE: emailからユーザの取得
-// // 	user, err := models.Users(qm.Where("email = ?", requestParams.Email)).One(ctx, as.db)
-// // 	if err != nil {
-// // 		return &dto.SignInResponse{TokenString: "", NotFoundMessage: "メールアドレスまたはパスワードに該当するユーザが存在しません。", Error: nil}
-// // 	}
+func (cs *companyService) SignIn(ctx context.Context, requestParams companies.CompanySignInInput) (statusCode int64, tokenString string, error error) {
+	// NOTE: emailからCompanyの取得
+	company, err := models.Companies(qm.Where("email = ?", requestParams.Email)).One(ctx, cs.db)
+	if err != nil {
+		return http.StatusBadRequest, "", fmt.Errorf("メールアドレスまたはパスワードに該当する%sが存在しません。", "企業")
+	}
 
-// // 	// NOTE: パスワードの照合
-// // 	if err := as.compareHashPassword(user.Password, requestParams.Password); err != nil {
-// // 		return &dto.SignInResponse{TokenString: "", NotFoundMessage: "メールアドレスまたはパスワードに該当するユーザが存在しません。", Error: nil}
-// // 	}
-// // 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-// // 		"user_id": user.ID,
-// // 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-// // 	})
-// // 	// TODO: JWT_SECRETを環境変数に切り出す
-// // 	tokenString, err := token.SignedString([]byte("abcdefghijklmn"))
-// // 	if err != nil {
-// // 		return &dto.SignInResponse{TokenString: "", NotFoundMessage: "", Error: err}
-// // 	}
-// // 	return &dto.SignInResponse{TokenString: tokenString, NotFoundMessage: "", Error: nil}
-// // }
+	// NOTE: パスワードの照合
+	if err := cs.compareHashPassword(company.Password, requestParams.Password); err != nil {
+		return http.StatusBadRequest, "", fmt.Errorf("メールアドレスまたはパスワードに該当する%sが存在しません。", "企業")
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": company.ID,
+		"auth_type": "company",
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	})
+	// TODO: JWT_SECRETを環境変数に切り出す
+	tokenString, err = token.SignedString([]byte("abcdefghijklmn"))
+	if err != nil {
+		return http.StatusInternalServerError, "", err
+	}
+	return http.StatusOK, tokenString, nil
+}
 
 // // func (as *authService) GetAuthUser(ctx echo.Context) (*models.User, error) {
 // // 	// NOTE: Cookieからtokenを取得
@@ -117,10 +123,10 @@ func (cs *companyService) encryptPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-// // // NOTE: パスワードの照合
-// // func (as *authService) compareHashPassword(hashedPassword, requestPassword string) error {
-// // 	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(requestPassword)); err != nil {
-// // 		return err
-// // 	}
-// // 	return nil
-// // }
+// NOTE: パスワードの照合
+func (cs *companyService) compareHashPassword(hashedPassword, requestPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(requestPassword)); err != nil {
+		return err
+	}
+	return nil
+}

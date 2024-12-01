@@ -11,6 +11,7 @@ import (
 )
 
 type CompaniesController interface {
+	PostAuthSignIn(ctx context.Context, request companies.PostAuthSignInRequestObject) (companies.PostAuthSignInResponseObject, error)
 	PostAuthValidateSignUp(ctx context.Context, request companies.PostAuthValidateSignUpRequestObject) (companies.PostAuthValidateSignUpResponseObject, error)
 	PostAuthSignUp(ctx context.Context, request companies.PostAuthSignUpRequestObject) (companies.PostAuthSignUpResponseObject, error)
 }
@@ -21,6 +22,42 @@ type companiesController struct {
 
 func NewCompaniesController(companyService services.CompanyService) CompaniesController {
 	return &companiesController{companyService}
+}
+
+func (cc *companiesController) PostAuthSignIn(ctx context.Context, request companies.PostAuthSignInRequestObject) (companies.PostAuthSignInResponseObject, error) {
+	inputs := companies.CompanySignInInput{
+		Email: request.Body.Email,
+		Password: request.Body.Password,
+	}
+
+	statusCode, tokenString, err := cc.companyService.SignIn(ctx, inputs)
+	switch (statusCode) {
+	case http.StatusInternalServerError:
+		return companies.PostAuthSignIn500JSONResponse{InternalServerErrorResponseJSONResponse: companies.InternalServerErrorResponseJSONResponse{
+			Code: http.StatusInternalServerError,
+			Message: err.Error(),
+		}}, nil
+	case http.StatusBadRequest:
+		return companies.PostAuthSignIn400JSONResponse{CompanySignInBadRequestResponseJSONResponse: companies.CompanySignInBadRequestResponseJSONResponse{
+			Errors: []string{err.Error()},
+		}}, nil
+	}
+	
+	// NOTE: Cookieにtokenをセット
+	cookie := &http.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		MaxAge:   3600 * 24,
+		Path:     "/",
+		Domain:   "localhost",
+		Secure:   false,
+		HttpOnly: true,
+	}
+	return companies.PostAuthSignIn200JSONResponse{CompanySignInOkResponseJSONResponse: companies.CompanySignInOkResponseJSONResponse{
+		Headers: companies.CompanySignInOkResponseResponseHeaders{
+			SetCookie: cookie.String(),
+		},
+	}}, nil
 }
 
 func (cc *companiesController) PostAuthValidateSignUp(ctx context.Context, request companies.PostAuthValidateSignUpRequestObject) (companies.PostAuthValidateSignUpResponseObject, error) {

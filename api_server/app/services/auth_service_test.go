@@ -3,7 +3,9 @@ package services
 import (
 	"app/generated/auth"
 	models "app/models/generated"
+	"app/test/factories"
 	"bytes"
+	"net/http"
 	"strconv"
 	"testing"
 	"time"
@@ -12,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -201,35 +204,37 @@ func (s *TestAuthServiceSuite) TestSignUp_SuccessWithOptionalFields() {
 	assert.Equal(s.T(), "supporters/"+id+"/backIdentificationFile.jpg", supporter.BackIdentification)
 }
 
-// func (s *TestAuthServiceSuite) TestSignIn() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
+func (s *TestAuthServiceSuite) TestSignIn_StatusOK() {
+	// NOTE: テスト用エンジニアの作成
+	supporter := factories.SupporterFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.Supporter)
+	if err := supporter.Insert(ctx, DBCon, boil.Infer()); err != nil {
+		s.T().Fatalf("failed to create test supporter %v", err)
+	}
 
-// 	requestParams := dto.SignInRequest{Email: "test@example.com", Password: "password"}
+	requestParams := auth.PostAuthSignInJSONBody{Email: "test@example.com", Password: "password"}
 
-// 	result := testAuthService.SignIn(ctx, requestParams)
+	statusCode, tokenString, err := testAuthService.SignIn(ctx, requestParams)
 
-// 	assert.Nil(s.T(), result.Error)
-// 	assert.Equal(s.T(), "", result.NotFoundMessage)
-// 	assert.NotNil(s.T(), result.TokenString)
-// }
+	assert.Equal(s.T(), int64(http.StatusOK), statusCode)
+	assert.NotNil(s.T(), tokenString)
+	assert.Nil(s.T(), err)
+}
 
-// func (s *TestAuthServiceSuite) TestSignIn_NotFoundError() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
+func (s *TestAuthServiceSuite) TestSignIn_BadRequest() {
+	// NOTE: テスト用エンジニアの作成
+	supporter := factories.SupporterFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.Supporter)
+	if err := supporter.Insert(ctx, DBCon, boil.Infer()); err != nil {
+		s.T().Fatalf("failed to create test supporter %v", err)
+	}
 
-// 	requestParams := dto.SignInRequest{Email: "test_1@example.com", Password: "password"}
+	requestParams := auth.PostAuthSignInJSONBody{Email: "test_@example.com", Password: "password"}
 
-// 	result := testAuthService.SignIn(ctx, requestParams)
+	statusCode, tokenString, err := testAuthService.SignIn(ctx, requestParams)
 
-// 	assert.Equal(s.T(), "メールアドレスまたはパスワードに該当するユーザが存在しません。", result.NotFoundMessage)
-// }
+	assert.Equal(s.T(), int64(http.StatusBadRequest), statusCode)
+	assert.Equal(s.T(), "", tokenString)
+	assert.Equal(s.T(), "メールアドレスまたはパスワードに該当するエンジニアが存在しません。", err.Error())
+}
 
 func TestAuthService(t *testing.T) {
 	// テストスイートを実行

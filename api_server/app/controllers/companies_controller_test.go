@@ -4,6 +4,7 @@ import (
 	"app/generated/companies"
 	models "app/models/generated"
 	"app/services"
+	"app/test/factories"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/oapi-codegen/testutil"
@@ -120,46 +122,54 @@ func (s *TestCompaniesControllerSuite) TestPostAuthSignUp_SuccessRequiredFields(
 	assert.True(s.T(), isExistsCompany)
 }
 
-// func (s *TestCompaniesControllerSuite) TestSignIn() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
+func (s *TestCompaniesControllerSuite) TestPostAuthSignIn_StatusOk() {
+	// NOTE: テスト用企業の作成
+	company := factories.CompanyFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.Company)
+	if err := company.Insert(ctx, DBCon, boil.Infer()); err != nil {
+		s.T().Fatalf("failed to create test company %v", err)
+	}
 
-// 	echoServer := echo.New()
-// 	res := httptest.NewRecorder()
-// 	signInRequestBody := bytes.NewBufferString("{\"email\":\"test@example.com\",\"password\":\"password\"}")
-// 	req := httptest.NewRequest(http.MethodPost, "/auth/sign_in", signInRequestBody)
-// 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-// 	c := echoServer.NewContext(req, res)
-// 	c.SetPath("auth/sign_in")
-// 	testCompaniesController.SignIn(c)
+	e := echo.New()
 
-// 	assert.Equal(s.T(), 200, res.Code)
-// 	token = res.Result().Cookies()[0].Value
-// 	assert.NotEmpty(s.T(), token)
-// }
+	strictHandler := companies.NewStrictHandler(testCompaniesController, nil)
+	companies.RegisterHandlers(e, strictHandler)
 
-// func (s *TestCompaniesControllerSuite) TestSignIn_NotFoundError() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
+	reqBody := companies.CompanySignInInput{
+		Email: "test@example.com",
+		Password: "password",
+	}
+	result := testutil.NewRequest().Post("/companies/signIn").WithJsonBody(reqBody).GoWithHTTPHandler(s.T(), e)
+	assert.Equal(s.T(), int(http.StatusOK), result.Code())
 
-// 	echoServer := echo.New()
-// 	res := httptest.NewRecorder()
-// 	signInRequestBody := bytes.NewBufferString("{\"email\":\"test_1@example.com\",\"password\":\"password\"}")
-// 	req := httptest.NewRequest(http.MethodPost, "/auth/sign_in", signInRequestBody)
-// 	req.Header.Set(echo.HeaderContentType, "application/json")
-// 	c := echoServer.NewContext(req, res)
-// 	c.SetPath("auth/sing_in")
-// 	testCompaniesController.SignIn(c)
+	cookieString := result.Recorder.Result().Header.Values("Set-Cookie")[0]
+	assert.NotEmpty(s.T(), cookieString)
+}
 
-// 	assert.Equal(s.T(), 404, res.Code)
-// 	assert.Empty(s.T(), res.Result().Cookies())
-// }
+func (s *TestCompaniesControllerSuite) TestPostAuthSignIn_BadRequest() {
+	// NOTE: テスト用企業の作成
+	company := factories.CompanyFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.Company)
+	if err := company.Insert(ctx, DBCon, boil.Infer()); err != nil {
+		s.T().Fatalf("failed to create test company %v", err)
+	}
+
+	e := echo.New()
+
+	strictHandler := companies.NewStrictHandler(testCompaniesController, nil)
+	companies.RegisterHandlers(e, strictHandler)
+
+	reqBody := companies.CompanySignInInput{
+		Email: "test_@example.com",
+		Password: "password",
+	}
+	result := testutil.NewRequest().Post("/companies/signIn").WithJsonBody(reqBody).GoWithHTTPHandler(s.T(), e)
+	assert.Equal(s.T(), int(http.StatusBadRequest), result.Code())
+
+	var res companies.CompanySignInBadRequestResponse
+	err := result.UnmarshalBodyToObject(&res)
+	assert.NoError(s.T(), err, "error unmarshaling response")
+
+	assert.Equal(s.T(), []string{"メールアドレスまたはパスワードに該当する企業が存在しません。"}, res.Errors)
+}
 
 func TestCompaniesController(t *testing.T) {
 	// テストスイートを実施

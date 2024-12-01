@@ -4,6 +4,7 @@ import (
 	"app/generated/auth"
 	models "app/models/generated"
 	"app/services"
+	"app/test/factories"
 	"bytes"
 	"encoding/json"
 	"mime/multipart"
@@ -15,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/oapi-codegen/testutil"
@@ -368,46 +370,54 @@ func (s *TestAuthControllerSuite) TestPostAuthSignUp_SuccessWithEmptyBirthday() 
 	assert.Equal(s.T(), "supporters/"+id+"/backIdentificationFile.jpg", supporter.BackIdentification)
 }
 
-// func (s *TestAuthControllerSuite) TestSignIn() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
+func (s *TestAuthControllerSuite) TestPostAuthSignIn_StatusOk() {
+	// NOTE: テスト用エンジニアの作成
+	supporter := factories.SupporterFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.Supporter)
+	if err := supporter.Insert(ctx, DBCon, boil.Infer()); err != nil {
+		s.T().Fatalf("failed to create test supporter %v", err)
+	}
 
-// 	echoServer := echo.New()
-// 	res := httptest.NewRecorder()
-// 	signInRequestBody := bytes.NewBufferString("{\"email\":\"test@example.com\",\"password\":\"password\"}")
-// 	req := httptest.NewRequest(http.MethodPost, "/auth/sign_in", signInRequestBody)
-// 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-// 	c := echoServer.NewContext(req, res)
-// 	c.SetPath("auth/sign_in")
-// 	testAuthController.SignIn(c)
+	e := echo.New()
 
-// 	assert.Equal(s.T(), 200, res.Code)
-// 	token = res.Result().Cookies()[0].Value
-// 	assert.NotEmpty(s.T(), token)
-// }
+	strictHandler := auth.NewStrictHandler(testAuthController, nil)
+	auth.RegisterHandlers(e, strictHandler)
 
-// func (s *TestAuthControllerSuite) TestSignIn_NotFoundError() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
+	reqBody := auth.SupporterSignInInput{
+		Email: "test@example.com",
+		Password: "password",
+	}
+	result := testutil.NewRequest().Post("/auth/signIn").WithJsonBody(reqBody).GoWithHTTPHandler(s.T(), e)
+	assert.Equal(s.T(), int(http.StatusOK), result.Code())
 
-// 	echoServer := echo.New()
-// 	res := httptest.NewRecorder()
-// 	signInRequestBody := bytes.NewBufferString("{\"email\":\"test_1@example.com\",\"password\":\"password\"}")
-// 	req := httptest.NewRequest(http.MethodPost, "/auth/sign_in", signInRequestBody)
-// 	req.Header.Set(echo.HeaderContentType, "application/json")
-// 	c := echoServer.NewContext(req, res)
-// 	c.SetPath("auth/sing_in")
-// 	testAuthController.SignIn(c)
+	cookieString := result.Recorder.Result().Header.Values("Set-Cookie")[0]
+	assert.NotEmpty(s.T(), cookieString)
+}
 
-// 	assert.Equal(s.T(), 404, res.Code)
-// 	assert.Empty(s.T(), res.Result().Cookies())
-// }
+func (s *TestAuthControllerSuite) TestPostAuthSignIn_BadRequest() {
+	// NOTE: テスト用エンジニアの作成
+	supporter := factories.SupporterFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.Supporter)
+	if err := supporter.Insert(ctx, DBCon, boil.Infer()); err != nil {
+		s.T().Fatalf("failed to create test supporter %v", err)
+	}
+
+	e := echo.New()
+
+	strictHandler := auth.NewStrictHandler(testAuthController, nil)
+	auth.RegisterHandlers(e, strictHandler)
+
+	reqBody := auth.SupporterSignInInput{
+		Email: "test_@example.com",
+		Password: "password",
+	}
+	result := testutil.NewRequest().Post("/auth/signIn").WithJsonBody(reqBody).GoWithHTTPHandler(s.T(), e)
+	assert.Equal(s.T(), int(http.StatusBadRequest), result.Code())
+
+	var res auth.SupporterSignInBadRequestResponse
+	err := result.UnmarshalBodyToObject(&res)
+	assert.NoError(s.T(), err, "error unmarshaling response")
+
+	assert.Equal(s.T(), []string{"メールアドレスまたはパスワードに該当するエンジニアが存在しません。"}, res.Errors)
+}
 
 func TestAuthController(t *testing.T) {
 	// テストスイートを実施
