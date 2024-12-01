@@ -21,6 +21,14 @@ type CompanySignUpValidationError struct {
 	Tel      *[]string `json:"tel,omitempty"`
 }
 
+// CompanySignInBadRequestResponse defines model for CompanySignInBadRequestResponse.
+type CompanySignInBadRequestResponse struct {
+	Errors []string `json:"errors"`
+}
+
+// CompanySignInOkResponse defines model for CompanySignInOkResponse.
+type CompanySignInOkResponse = map[string]interface{}
+
 // CompanySignUpResponse defines model for CompanySignUpResponse.
 type CompanySignUpResponse struct {
 	Code   int64                        `json:"code"`
@@ -33,12 +41,24 @@ type InternalServerErrorResponse struct {
 	Message string `json:"message"`
 }
 
+// CompanySignInInput defines model for CompanySignInInput.
+type CompanySignInInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 // CompanySignUpInput defines model for CompanySignUpInput.
 type CompanySignUpInput struct {
 	Email    string `json:"email"`
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Tel      string `json:"tel"`
+}
+
+// PostAuthSignInJSONBody defines parameters for PostAuthSignIn.
+type PostAuthSignInJSONBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 // PostAuthSignUpJSONBody defines parameters for PostAuthSignUp.
@@ -57,6 +77,9 @@ type PostAuthValidateSignUpJSONBody struct {
 	Tel      string `json:"tel"`
 }
 
+// PostAuthSignInJSONRequestBody defines body for PostAuthSignIn for application/json ContentType.
+type PostAuthSignInJSONRequestBody PostAuthSignInJSONBody
+
 // PostAuthSignUpJSONRequestBody defines body for PostAuthSignUp for application/json ContentType.
 type PostAuthSignUpJSONRequestBody PostAuthSignUpJSONBody
 
@@ -65,6 +88,9 @@ type PostAuthValidateSignUpJSONRequestBody PostAuthValidateSignUpJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Company Sign In
+	// (POST /companies/signIn)
+	PostAuthSignIn(ctx echo.Context) error
 	// Company SignUp
 	// (POST /companies/signUp)
 	PostAuthSignUp(ctx echo.Context) error
@@ -76,6 +102,15 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// PostAuthSignIn converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAuthSignIn(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAuthSignIn(ctx)
+	return err
 }
 
 // PostAuthSignUp converts echo context to params.
@@ -124,9 +159,23 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.POST(baseURL+"/companies/signIn", wrapper.PostAuthSignIn)
 	router.POST(baseURL+"/companies/signUp", wrapper.PostAuthSignUp)
 	router.POST(baseURL+"/companies/validateSignUp", wrapper.PostAuthValidateSignUp)
 
+}
+
+type CompanySignInBadRequestResponseJSONResponse struct {
+	Errors []string `json:"errors"`
+}
+
+type CompanySignInOkResponseResponseHeaders struct {
+	SetCookie string
+}
+type CompanySignInOkResponseJSONResponse struct {
+	Body map[string]interface{}
+
+	Headers CompanySignInOkResponseResponseHeaders
 }
 
 type CompanySignUpResponseJSONResponse struct {
@@ -137,6 +186,48 @@ type CompanySignUpResponseJSONResponse struct {
 type InternalServerErrorResponseJSONResponse struct {
 	Code    int64  `json:"code"`
 	Message string `json:"message"`
+}
+
+type PostAuthSignInRequestObject struct {
+	Body *PostAuthSignInJSONRequestBody
+}
+
+type PostAuthSignInResponseObject interface {
+	VisitPostAuthSignInResponse(w http.ResponseWriter) error
+}
+
+type PostAuthSignIn200JSONResponse struct {
+	CompanySignInOkResponseJSONResponse
+}
+
+func (response PostAuthSignIn200JSONResponse) VisitPostAuthSignInResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Set-Cookie", fmt.Sprint(response.Headers.SetCookie))
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PostAuthSignIn400JSONResponse struct {
+	CompanySignInBadRequestResponseJSONResponse
+}
+
+func (response PostAuthSignIn400JSONResponse) VisitPostAuthSignInResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthSignIn500JSONResponse struct {
+	InternalServerErrorResponseJSONResponse
+}
+
+func (response PostAuthSignIn500JSONResponse) VisitPostAuthSignInResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PostAuthSignUpRequestObject struct {
@@ -225,6 +316,9 @@ func (response PostAuthValidateSignUp500JSONResponse) VisitPostAuthValidateSignU
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+	// Company Sign In
+	// (POST /companies/signIn)
+	PostAuthSignIn(ctx context.Context, request PostAuthSignInRequestObject) (PostAuthSignInResponseObject, error)
 	// Company SignUp
 	// (POST /companies/signUp)
 	PostAuthSignUp(ctx context.Context, request PostAuthSignUpRequestObject) (PostAuthSignUpResponseObject, error)
@@ -243,6 +337,35 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
+}
+
+// PostAuthSignIn operation middleware
+func (sh *strictHandler) PostAuthSignIn(ctx echo.Context) error {
+	var request PostAuthSignInRequestObject
+
+	var body PostAuthSignInJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthSignIn(ctx.Request().Context(), request.(PostAuthSignInRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthSignIn")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostAuthSignInResponseObject); ok {
+		return validResponse.VisitPostAuthSignInResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
 }
 
 // PostAuthSignUp operation middleware

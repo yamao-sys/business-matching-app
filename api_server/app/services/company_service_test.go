@@ -3,11 +3,14 @@ package services
 import (
 	"app/generated/companies"
 	models "app/models/generated"
+	"app/test/factories"
+	"net/http"
 	"testing"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -88,6 +91,38 @@ func (s *TestCompanyServiceSuite) TestSignUp_SuccessRequiredFields() {
 		s.T().Fatalf("failed to create company %v", err)
 	}
 	assert.True(s.T(), isExistsCompany)
+}
+
+func (s *TestCompanyServiceSuite) TestSignIn_StatusOK() {
+	// NOTE: テスト用企業の作成
+	company := factories.CompanyFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.Company)
+	if err := company.Insert(ctx, DBCon, boil.Infer()); err != nil {
+		s.T().Fatalf("failed to create test company %v", err)
+	}
+
+	requestParams := companies.CompanySignInInput{Email: "test@example.com", Password: "password"}
+
+	statusCode, tokenString, err := testCompanyService.SignIn(ctx, requestParams)
+
+	assert.Equal(s.T(), int64(http.StatusOK), statusCode)
+	assert.NotNil(s.T(), tokenString)
+	assert.Nil(s.T(), err)
+}
+
+func (s *TestCompanyServiceSuite) TestSignIn_BadRequest() {
+	// NOTE: テスト用企業の作成
+	company := factories.CompanyFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.Company)
+	if err := company.Insert(ctx, DBCon, boil.Infer()); err != nil {
+		s.T().Fatalf("failed to create test company %v", err)
+	}
+
+	requestParams := companies.CompanySignInInput{Email: "test_@example.com", Password: "password"}
+
+	statusCode, tokenString, err := testCompanyService.SignIn(ctx, requestParams)
+
+	assert.Equal(s.T(), int64(http.StatusBadRequest), statusCode)
+	assert.Equal(s.T(), "", tokenString)
+	assert.Equal(s.T(), "メールアドレスまたはパスワードに該当する企業が存在しません。", err.Error())
 }
 
 // func (s *TestCompanyServiceSuite) TestSignIn() {
