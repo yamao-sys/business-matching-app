@@ -125,36 +125,6 @@ func (s *TestCompanyServiceSuite) TestSignIn_BadRequest() {
 	assert.Equal(s.T(), "メールアドレスまたはパスワードに該当する企業が存在しません。", err.Error())
 }
 
-// func (s *TestCompanyServiceSuite) TestSignIn() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
-
-// 	requestParams := dto.SignInRequest{Email: "test@example.com", Password: "password"}
-
-// 	result := testCompanyService.SignIn(ctx, requestParams)
-
-// 	assert.Nil(s.T(), result.Error)
-// 	assert.Equal(s.T(), "", result.NotFoundMessage)
-// 	assert.NotNil(s.T(), result.TokenString)
-// }
-
-// func (s *TestCompanyServiceSuite) TestSignIn_NotFoundError() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
-
-// 	requestParams := dto.SignInRequest{Email: "test_1@example.com", Password: "password"}
-
-// 	result := testCompanyService.SignIn(ctx, requestParams)
-
-// 	assert.Equal(s.T(), "メールアドレスまたはパスワードに該当するユーザが存在しません。", result.NotFoundMessage)
-// }
-
 func TestCompanyService(t *testing.T) {
 	// テストスイートを実行
 	suite.Run(t, new(TestCompanyServiceSuite))

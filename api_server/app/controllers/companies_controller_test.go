@@ -171,47 +171,6 @@ func (s *TestCompaniesControllerSuite) TestPostAuthSignIn_BadRequest() {
 	assert.Equal(s.T(), []string{"メールアドレスまたはパスワードに該当する企業が存在しません。"}, res.Errors)
 }
 
-// func (s *TestCompaniesControllerSuite) TestSignIn() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
-
-// 	echoServer := echo.New()
-// 	res := httptest.NewRecorder()
-// 	signInRequestBody := bytes.NewBufferString("{\"email\":\"test@example.com\",\"password\":\"password\"}")
-// 	req := httptest.NewRequest(http.MethodPost, "/auth/sign_in", signInRequestBody)
-// 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-// 	c := echoServer.NewContext(req, res)
-// 	c.SetPath("auth/sign_in")
-// 	testCompaniesController.SignIn(c)
-
-// 	assert.Equal(s.T(), 200, res.Code)
-// 	token = res.Result().Cookies()[0].Value
-// 	assert.NotEmpty(s.T(), token)
-// }
-
-// func (s *TestCompaniesControllerSuite) TestSignIn_NotFoundError() {
-// 	// NOTE: テスト用ユーザの作成
-// 	user := factories.UserFactory.MustCreateWithOption(map[string]interface{}{"Email": "test@example.com"}).(*models.User)
-// 	if err := user.Insert(ctx, DBCon, boil.Infer()); err != nil {
-// 		s.T().Fatalf("failed to create test user %v", err)
-// 	}
-
-// 	echoServer := echo.New()
-// 	res := httptest.NewRecorder()
-// 	signInRequestBody := bytes.NewBufferString("{\"email\":\"test_1@example.com\",\"password\":\"password\"}")
-// 	req := httptest.NewRequest(http.MethodPost, "/auth/sign_in", signInRequestBody)
-// 	req.Header.Set(echo.HeaderContentType, "application/json")
-// 	c := echoServer.NewContext(req, res)
-// 	c.SetPath("auth/sing_in")
-// 	testCompaniesController.SignIn(c)
-
-// 	assert.Equal(s.T(), 404, res.Code)
-// 	assert.Empty(s.T(), res.Result().Cookies())
-// }
-
 func TestCompaniesController(t *testing.T) {
 	// テストスイートを実施
 	suite.Run(t, new(TestCompaniesControllerSuite))
