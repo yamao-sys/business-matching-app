@@ -37,6 +37,20 @@ paths:
       operationId: post-auth-sign_up
       requestBody:
         $ref: '#/components/requestBodies/SupporterSignUpInput'
+  /auth/signIn:
+    post:
+      summary: Supporter Sign In
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/SupporterSignInOkResponse'
+        '400':
+          $ref: '#/components/responses/SupporterSignInBadRequestResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerErrorResponse'
+      operationId: post-auth-sign_in
+      requestBody:
+        $ref: '#/components/requestBodies/SupporterSignInInput'
 components:
   schemas:
     SupporterSignUpValidationError:
@@ -101,6 +115,20 @@ components:
                 type: string
                 format: binary
       description: SignUp Supporter Iuput
+    SupporterSignInInput:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      description: SignIn Supporter Input
   responses:
     SupporterSignUpResponse:
       description: ''
@@ -118,6 +146,29 @@ components:
               errors:
                 type: object
                 $ref: '#/components/schemas/SupporterSignUpValidationError'
+    SupporterSignInOkResponse:
+      description: Supporter SignIn Response
+      content:
+        application/json:
+          schema:
+            type: object
+      headers:
+        Set-Cookie:
+          schema:
+            type: string
+    SupporterSignInBadRequestResponse:
+      description: Supporter SignIn BadRequest Response
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - errors
+            properties:
+              errors:
+                type: array
+                items:
+                  type: string
     InternalServerErrorResponse:
       description: Internal Server Error Response
       content:

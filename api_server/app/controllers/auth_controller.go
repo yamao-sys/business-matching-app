@@ -17,6 +17,7 @@ import (
 )
 
 type AuthController interface {
+	PostAuthSignIn(ctx context.Context, request auth.PostAuthSignInRequestObject) (auth.PostAuthSignInResponseObject, error)
 	PostAuthValidateSignUp(ctx context.Context, request auth.PostAuthValidateSignUpRequestObject) (auth.PostAuthValidateSignUpResponseObject, error)
 	PostAuthSignUp(ctx context.Context, request auth.PostAuthSignUpRequestObject) (auth.PostAuthSignUpResponseObject, error)
 }
@@ -27,6 +28,42 @@ type authController struct {
 
 func NewAuthController(authService services.AuthService) AuthController {
 	return &authController{authService}
+}
+
+func (authController *authController) PostAuthSignIn(ctx context.Context, request auth.PostAuthSignInRequestObject) (auth.PostAuthSignInResponseObject, error) {
+	inputs := auth.PostAuthSignInJSONBody{
+		Email: request.Body.Email,
+		Password: request.Body.Password,
+	}
+
+	statusCode, tokenString, err := authController.authService.SignIn(ctx, inputs)
+	switch (statusCode) {
+	case http.StatusInternalServerError:
+		return auth.PostAuthSignIn500JSONResponse{InternalServerErrorResponseJSONResponse: auth.InternalServerErrorResponseJSONResponse{
+			Code: http.StatusInternalServerError,
+			Message: err.Error(),
+		}}, nil
+	case http.StatusBadRequest:
+		return auth.PostAuthSignIn400JSONResponse{SupporterSignInBadRequestResponseJSONResponse: auth.SupporterSignInBadRequestResponseJSONResponse{
+			Errors: []string{err.Error()},
+		}}, nil
+	}
+	
+	// NOTE: Cookieにtokenをセット
+	cookie := &http.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		MaxAge:   3600 * 24,
+		Path:     "/",
+		Domain:   "localhost",
+		Secure:   false,
+		HttpOnly: true,
+	}
+	return auth.PostAuthSignIn200JSONResponse{SupporterSignInOkResponseJSONResponse: auth.SupporterSignInOkResponseJSONResponse{
+		Headers: auth.SupporterSignInOkResponseResponseHeaders{
+			SetCookie: cookie.String(),
+		},
+	}}, nil
 }
 
 func (authController *authController) PostAuthValidateSignUp(ctx context.Context, request auth.PostAuthValidateSignUpRequestObject) (auth.PostAuthValidateSignUpResponseObject, error) {
